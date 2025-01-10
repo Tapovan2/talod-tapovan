@@ -86,6 +86,7 @@ const styles = StyleSheet.create({
 interface MarkSheetProps {
   subject: string;
   standard: string;
+  chapter: string;
   date: string;
   students: {
     srNo: number;
@@ -97,10 +98,19 @@ interface MarkSheetProps {
 
 export function MarkSheetPDF({
   subject,
+  chapter,
   standard,
   date,
   students,
 }: MarkSheetProps) {
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const day = String(date.getUTCDate()).padStart(2, "0");
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const year = date.getUTCFullYear();
+
+    return `${day}-${month}-${year}`;
+  };
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -109,8 +119,9 @@ export function MarkSheetPDF({
           <Text style={styles.subHeader}>Tapovan Vidhyamandir Sankul</Text>
           <View style={styles.examInfo}>
             <Text>SUB - {subject}</Text>
+            <Text>CHA - {chapter} </Text>
             <Text>STD - {standard}</Text>
-            <Text>DATE - {date}</Text>
+            <Text>DATE - {formatDate(date)}</Text>
           </View>
         </View>
 

@@ -8,15 +8,14 @@ export async function GET(request: Request) {
 
   const students = await prisma.student.findMany({
     where: {
-      currentStandard: standard ? { number: parseInt(standard) } : undefined,
+      currentStandard: standard ? parseInt(standard) : undefined,
       currentClass: classParam || undefined,
     },
-    include: {
-      currentStandard: true,
-    },
   });
+  //@ts-expect-error
+  const sortedStudents = students.sort((a, b) => a.rollNo - b.rollNo);
 
-  return NextResponse.json(students);
+  return NextResponse.json(sortedStudents);
 }
 
 export async function POST(request: Request) {
@@ -25,7 +24,7 @@ export async function POST(request: Request) {
     data: {
       name: data.name,
       rollNo: data.rollNo,
-      currentStandard: { connect: { number: data.currentStandard } },
+      currentStandard: data.currentStandard,
       currentClass: data.currentClass,
       academicHistory: {
         create: {

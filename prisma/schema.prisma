@@ -1,58 +1,154 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+// generator client {
+//   provider = "prisma-client-js"
+// }
+
+// datasource db {
+//   provider = "mongodb"
+//   url      = env("DATABASE_URL")
+// }
+
+// model Standard {
+//   id      String   @id @default(auto()) @map("_id") @db.ObjectId
+//   number  Int      @unique
+//   classes String[]
+//   subjects Subject[]
+//   students Student[]
+//   markEntries MarkEntry[]
+// }
+
+// model Subject {
+//   id       String   @id @default(auto()) @map("_id") @db.ObjectId
+//   name     String
+//   standard Standard @relation(fields: [standardId], references: [id])
+//   standardId String @db.ObjectId
+//   marks    Mark[]
+//   markEntries MarkEntry[]
+// }
+
+// model Student {
+//   id              String   @id @default(auto()) @map("_id") @db.ObjectId
+//   name            String
+//   rollNo          String   @unique
+//   currentStandard Standard @relation(fields: [standardId], references: [id])
+//   standardId      String   @db.ObjectId
+//   currentClass    String
+//   academicHistory AcademicHistory[]
+//   marks           Mark[]
+// }
+
+// model AcademicHistory {
+//   id        String   @id @default(auto()) @map("_id") @db.ObjectId
+//   year      Int
+//   standard  Int
+//   class     String
+//   student   Student  @relation(fields: [studentId], references: [id])
+//   studentId String   @db.ObjectId
+// }
+
+// model MarkEntry {
+//   id         String   @id @default(auto()) @map("_id") @db.ObjectId
+//   name       String
+//   date       DateTime
+//   standard   Standard @relation(fields: [standardId], references: [id])
+//   standardId String   @db.ObjectId
+//   subject    Subject  @relation(fields: [subjectId], references: [id])
+//   subjectId  String   @db.ObjectId
+//   marks      Mark[]
+// }
+
+// model Mark {
+//   id         String   @id @default(auto()) @map("_id") @db.ObjectId
+//   student    Student  @relation(fields: [studentId], references: [id])
+//   studentId  String   @db.ObjectId
+//   subject    Subject  @relation(fields: [subjectId], references: [id])
+//   subjectId  String   @db.ObjectId
+//   markEntry  MarkEntry @relation(fields: [markEntryId], references: [id])
+//   markEntryId String   @db.ObjectId
+//   score      String
+//   academicYear Int
+// }
+
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-model Standard {
-  id      String   @id @default(auto()) @map("_id") @db.ObjectId
-  number  Int      @unique
-  classes String[]
-  subjects Subject[]
-  students Student[]
-}
+// model Standard {
+//   id           Int           @id @default(autoincrement())
+//   number       Int           @unique
+//   classes      String[]
+//   subjects     Subject[]
+//   students     Student[]
+//   markEntries  MarkEntry[]
+  
+// }
 
-model Subject {
-  id       String   @id @default(auto()) @map("_id") @db.ObjectId
-  name     String
-  standard Standard @relation(fields: [standardId], references: [id])
-  standardId String @db.ObjectId
-  marks    Mark[]
-}
+// model Subject {
+//   id           Int           @id @default(autoincrement())
+//   name         String
+//   standard     Standard      @relation(fields: [standardId], references: [id])
+//   standardId   Int
+//   marks        Mark[]
+//   markEntries  MarkEntry[]
+
+//   @@unique([name, standardId])
+// }
 
 model Student {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  id              Int               @id @default(autoincrement())
   name            String
-  rollNo          String   @unique
-  currentStandard Standard @relation(fields: [standardId], references: [id])
-  standardId      String   @db.ObjectId
+  rollNo          String            
+  currentStandard Int          
   currentClass    String
   academicHistory AcademicHistory[]
   marks           Mark[]
+ 
 }
 
 model AcademicHistory {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        Int      @id @default(autoincrement())
   year      Int
   standard  Int
   class     String
   student   Student  @relation(fields: [studentId], references: [id])
-  studentId String   @db.ObjectId
+  studentId Int
+}
+
+model MarkEntry {
+  id         Int      @id @default(autoincrement())
+  name       String
+  date       DateTime
+  standard   Int
+ 
+  subject    String
+  
+  marks      Mark[]
 }
 
 model Mark {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  student    Student  @relation(fields: [studentId], references: [id])
-  studentId  String   @db.ObjectId
-  subject    Subject  @relation(fields: [subjectId], references: [id])
-  subjectId  String   @db.ObjectId
-  score      String
+  id           Int       @id @default(autoincrement())
+  student      Student   @relation(fields: [studentId], references: [id])
+  studentId    Int
+ 
+ 
+  markEntry    MarkEntry @relation(fields: [markEntryId], references: [id])
+  markEntryId  Int
+  score        String
   academicYear Int
+
+  @@unique([studentId, markEntryId])
 }
+
+
+
 

@@ -3,23 +3,23 @@ import prisma from "@/lib/prisma";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const standard = searchParams.get("standard");
-  const classParam = searchParams.get("class");
-  const subject = searchParams.get("subject");
+  const markEntryId = searchParams.get("markEntryId");
+
+  if (!markEntryId) {
+    return NextResponse.json(
+      { error: "Mark entry ID is required" },
+      { status: 400 }
+    );
+  }
 
   const marks = await prisma.mark.findMany({
     where: {
-      student: {
-        currentStandard: standard ? { number: parseInt(standard) } : undefined,
-        currentClass: classParam || undefined,
-      },
-      subject: {
-        name: subject || undefined,
-      },
+      markEntryId: parseInt(markEntryId),
     },
     include: {
       student: true,
-      subject: true,
+
+      markEntry: true,
     },
   });
 
@@ -36,27 +36,55 @@ export async function POST(request: Request) {
         subject: any;
         score: any;
         academicYear: any;
+        markEntryId: any;
       }) => {
         const student = await prisma.student.findUnique({
           where: { id: mark.student },
         });
 
-        const subject = await prisma.subject.findFirst({
-          where: { name: mark.subject, standardId: student?.standardId },
+        const markEntry = await prisma.markEntry.findUnique({
+          where: { id: mark.markEntryId },
         });
 
-        if (!student || !subject) {
-          throw new Error("Student or Subject not found");
+        if (!student || !markEntry) {
+          throw new Error("Student or Mark Entry not found");
         }
-
-        return prisma.mark.create({
-          data: {
-            student: { connect: { id: student?.id } },
-            subject: { connect: { id: subject?.id } },
-            score: mark.score,
-            academicYear: mark.academicYear,
+        // Check if the mark already exists for the student and mark entry
+        const existingMark = await prisma.mark.findUnique({
+          where: {
+            studentId_markEntryId: {
+              studentId: student.id,
+              markEntryId: markEntry.id,
+            },
           },
         });
+        if (existingMark) {
+          // If the mark already exists, update it
+          return prisma.mark.update({
+            where: {
+              studentId_markEntryId: {
+                studentId: student.id,
+                markEntryId: markEntry.id,
+              },
+            },
+            data: {
+              score: mark.score,
+              academicYear: mark.academicYear,
+            },
+          });
+        } else {
+          // If the mark doesn't exist, create a new one
+
+          return prisma.mark.create({
+            data: {
+              student: { connect: { id: student.id } },
+
+              markEntry: { connect: { id: markEntry.id } },
+              score: mark.score,
+              academicYear: mark.academicYear,
+            },
+          });
+        }
       }
     )
   );
