@@ -47,7 +47,7 @@ export default function SubjectPage({
   }, [students]);
 
   useEffect(() => {
-    // Fetch marks when a new entry is selected
+    
     if (selectedEntry) {
       fetchMarks(selectedEntry.id);
     }
@@ -240,13 +240,13 @@ export default function SubjectPage({
             </TableBody>
           </Table>
           <div className="flex justify-between mt-4">
-            <Button onClick={handleSubmit}>
+            <Button onClick={handleSubmit} disabled={loading}>
               {loading ? "Saving..." : "Save Marks"}
             </Button>
             {isClient && (
               <PDFDownloadLink
                 document={<MarkSheetPDF {...getPdfData()} />}
-                fileName={`marksheet-${params.standard}-${params.class}-${subjectName}-${selectedEntry.name}.pdf`}
+                fileName={`Marks-${params.standard}-${params.class}-${subjectName}-${selectedEntry.name}.pdf`}
               >
                 {/*@ts-ignore*/}
                 {({ loading }) => (
