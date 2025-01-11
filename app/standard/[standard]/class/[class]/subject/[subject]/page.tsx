@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,12 +14,15 @@ import {
 } from "@/components/ui/table";
 import { MarkSheetPDF } from "@/components/MaeksheetPdf";
 import { MarkEntryCard } from "@/components/MarkEntryCard";
-import Breadcrumbs from "../../../../../../components/Breadcrumbs";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import { useStudents } from "@/hooks/useStudents";
+import { useMarkEntries } from "@/hooks/useMarkEntries";
+import { useMarks } from "@/hooks/useMarks";
 
 interface MarkEntry {
   id: string;
   name: string;
-  test:string;
+  test: string;
   MaxMarks: number;
   date: string;
 }
@@ -30,131 +33,34 @@ export default function SubjectPage({
   params: { standard: string; class: string; subject: string };
 }) {
   const subjectName = decodeURIComponent(params.subject);
-  const [students, setStudents] = useState([]);
-  const [marks, setMarks] = useState<{ [key: string]: string }>({});
-  const [isClient, setIsClient] = useState(false);
-  const [markEntries, setMarkEntries] = useState<MarkEntry[]>([]);
   const [selectedEntry, setSelectedEntry] = useState<MarkEntry | null>(null);
-  const [loading, setIsLoading] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  const { students } = useStudents(params.standard, params.class);
+  const { markEntries, addMarkEntry } = useMarkEntries(params.standard, subjectName);
+  const { marks, setMarks, submitMarks, loading } = useMarks(students, selectedEntry?.id || null);
 
   useEffect(() => {
     setIsClient(true);
-    fetchStudents();
-    fetchMarkEntries();
   }, []);
 
-  useEffect(() => {
-    if (students.length > 0) {
-      initializeMarks();
-    }
-  }, [students]);
-
-  useEffect(() => {
-    if (selectedEntry) {
-      fetchMarks(selectedEntry.id);
-    }
-  }, [selectedEntry]);
-
-  const fetchStudents = async () => {
-    try {
-      const res = await fetch(
-        `/api/students?standard=${params.standard}&class=${params.class}`
-      );
-      if (!res.ok) throw new Error("Failed to fetch students");
-
-      const data = await res.json();
-
-      setStudents(data);
-    } catch (error) {
-      console.error("Error fetching students:", error);
-    }
-  };
-
-  const initializeMarks = () => {
-    const initialMarks = students.reduce((acc, student) => {
-      //@ts-expect-error
-      acc[student.id] = "";
-      return acc;
-    }, {});
-    setMarks(initialMarks);
-  };
-
-  const fetchMarkEntries = async () => {
-    const res = await fetch(
-      `/api/mark-entries?standard=${params.standard}&subject=${subjectName}`
-    );
-
-    const data = await res.json();
-   
-
-    if (!data) return;
-
-    setMarkEntries(data);
-  };
-
-  const fetchMarks = async (markEntryId: string) => {
-    const res = await fetch(`/api/marks?markEntryId=${markEntryId}`);
-    const data = await res.json();
-    if (data.length === 0) {
-      initializeMarks();
-      return;
-    }
-
-    const marksObj = data.reduce((acc: any, mark: any) => {
-      acc[mark.student.id] = mark.score.toString();
-      return acc;
-    }, {});
-    setMarks(marksObj);
-  };
-
-  const handleMarkChange = (studentId: string, value: string) => {
+  const handleMarkChange = useCallback((studentId: string, value: string) => {
     setMarks((prevMarks) => ({
       ...prevMarks,
       [studentId]: value,
     }));
-  };
+  }, [setMarks]);
 
-  const handleSubmit = async () => {
-    const markData = students.map((student: any) => ({
-      student: student.id,
-      markEntryId: selectedEntry?.id,
-      academicYear: new Date().getFullYear(),
-      score: marks[student.id] || "AB",
-    }));
-
-    try {
-      setIsLoading(true);
-      const res = await fetch("/api/marks", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(markData),
-      });
-
-      if (res.ok) {
-        setIsLoading(false);
-        alert("Marks submitted successfully");
-      } else {
-        setIsLoading(false);
-        alert("Error submitting marks");
-        throw new Error("Error submitting marks");
-      }
-    } catch (error) {
-      alert("Error submitting marks");
-      console.error(error);
-    }
-  };
-
-  const handleCreateEntry = (newEntry: MarkEntry) => {
-    setMarkEntries([...markEntries, newEntry]);
+  const handleCreateEntry = useCallback((newEntry: MarkEntry) => {
+    addMarkEntry(newEntry);
     setSelectedEntry(newEntry);
-  };
+  }, [addMarkEntry]);
 
-  const handleSelectEntry = (entry: MarkEntry) => {
+  const handleSelectEntry = useCallback((entry: MarkEntry | null) => {
     setSelectedEntry(entry);
-    fetchMarks(entry.id);
-  };
+  }, []);
 
-  const getPdfData = () => {
+  const getPdfData = useCallback(() => {
     return {
       subject: subjectName.toUpperCase(),
       chapter: selectedEntry?.test || "",
@@ -170,7 +76,7 @@ export default function SubjectPage({
         marks: marks[student.id] || "AB",
       })),
     };
-  };
+  }, [subjectName, selectedEntry, params.standard, students, marks]);
 
   return (
     <div className="space-y-6">
@@ -183,7 +89,7 @@ export default function SubjectPage({
         ]}
       />
      
-      <div className="flex gap-4 items-center">
+     <div className="flex gap-4 items-center">
         <label
           htmlFor="entryDropdown"
           className="block text-sm font-medium text-gray-700 mb-2"
@@ -199,7 +105,7 @@ export default function SubjectPage({
               (entry) => entry.id == selectedId
             );
             console.log("selectedID", selected);
-            //@ts-expect-error
+            
             handleSelectEntry(selected || null);
           }}
         >
@@ -230,7 +136,7 @@ export default function SubjectPage({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {students.map((student: any, index: number) => (
+              {students.map((student: any) => (
                 <TableRow key={student.id}>
                   <TableCell>{student.rollNo}</TableCell>
                   <TableCell>{student.name}</TableCell>
@@ -251,7 +157,7 @@ export default function SubjectPage({
             </TableBody>
           </Table>
           <div className="flex justify-between mt-4">
-            <Button onClick={handleSubmit} disabled={loading}>
+            <Button onClick={submitMarks} disabled={loading}>
               {loading ? "Saving..." : "Save Marks"}
             </Button>
             {isClient && (
@@ -259,7 +165,7 @@ export default function SubjectPage({
                 document={<MarkSheetPDF {...getPdfData()} />}
                 fileName={`Marks-${params.standard}-${params.class}-${subjectName}-${selectedEntry.name}.pdf`}
               >
-                {/*@ts-ignore*/}
+                {/*@ts-expect-error*/}
                 {({ loading }) => (
                   <Button disabled={loading}>
                     {loading ? "Generating PDF..." : "Download PDF"}
@@ -273,3 +179,4 @@ export default function SubjectPage({
     </div>
   );
 }
+
