@@ -222,8 +222,8 @@ export default function AdminPage() {
                                   <Label htmlFor="class">Class</Label>
                                   <Input id="class" name="class" defaultValue={selectedClass} readOnly />
                                 </div>
-                                <Button type="submit" disabled={loadingId === editingStudent.id}>
-                                  {loadingId === editingStudent.id ? 'Saving...' : 'Save Changes'}
+                                <Button type="submit" disabled={loadingId === editingStudent?.id}>
+                                  {loadingId === editingStudent?.id ? 'Saving...' : 'Save Changes'}
                                 </Button>
                               </form>
                             </DialogContent>
