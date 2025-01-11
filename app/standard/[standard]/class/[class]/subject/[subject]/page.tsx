@@ -14,10 +14,13 @@ import {
 } from "@/components/ui/table";
 import { MarkSheetPDF } from "@/components/MaeksheetPdf";
 import { MarkEntryCard } from "@/components/MarkEntryCard";
+import Breadcrumbs from "../../../../../../components/Breadcrumbs";
 
 interface MarkEntry {
   id: string;
   name: string;
+  test:string;
+  MaxMarks: number;
   date: string;
 }
 
@@ -47,7 +50,6 @@ export default function SubjectPage({
   }, [students]);
 
   useEffect(() => {
-    
     if (selectedEntry) {
       fetchMarks(selectedEntry.id);
     }
@@ -83,6 +85,8 @@ export default function SubjectPage({
     );
 
     const data = await res.json();
+    console.log("Mark-Entry", data);
+
     if (!data) return;
 
     setMarkEntries(data);
@@ -154,6 +158,8 @@ export default function SubjectPage({
     return {
       subject: subjectName.toUpperCase(),
       chapter: selectedEntry?.name || "",
+      testName:markEntries[0].test,
+      maxMarks: markEntries[0].MaxMarks,
       standard: params.standard,
       date: selectedEntry?.date || new Date().toLocaleDateString("en-GB"),
       entryName: selectedEntry?.name || "",
@@ -168,10 +174,15 @@ export default function SubjectPage({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">
-        Standard {params.standard} - Class {params.class} - {subjectName}
-      </h1>
-
+      <Breadcrumbs
+        items={[
+          { label: "Home", href: "/" },
+          { label: `Standard ${params.standard}`, href: `/standard/${params.standard}` },
+          { label: `Class ${params.class}`, href: `/standard/${params.standard}/class/${params.class}` },
+          { label: subjectName, href: "#" },
+        ]}
+      />
+     
       <div className="flex gap-4 items-center">
         <label
           htmlFor="entryDropdown"

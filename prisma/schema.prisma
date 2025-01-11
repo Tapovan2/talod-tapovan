@@ -129,7 +129,9 @@ model MarkEntry {
   name       String
   date       DateTime
   standard   Int
+  test   String
  
+  MaxMarks Int
   subject    String
   
   marks      Mark[]

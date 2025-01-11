@@ -25,11 +25,13 @@ export function MarkEntryCard({
   onCreateEntry,
 }: MarkEntryCardProps) {
   const [isCreating, setIsCreating] = useState(false);
-  const [name, setName] = useState("");
+  const [Chapter, setChapter] = useState("");
   const [date, setDate] = useState("");
+  const [testName,setTestName] =useState("");
+  const [MaxMarks, setMaxMarks] = useState("");
 
   const handleCreate = async () => {
-    if (name && date) {
+    if (Chapter && date) {
       try {
         const response = await fetch("/api/mark-entries", {
           method: "POST",
@@ -37,10 +39,12 @@ export function MarkEntryCard({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            name,
+            Chapter,
+            testName,
             date,
             standard,
             subject,
+            MaxMarks,
           }),
         });
 
@@ -52,7 +56,7 @@ export function MarkEntryCard({
         const newEntry = await response.json();
         onCreateEntry(newEntry);
         setIsCreating(false);
-        setName("");
+        setChapter("");
         setDate("");
       } catch (error) {
         console.error("Error creating mark entry:", error);
@@ -88,9 +92,21 @@ export function MarkEntryCard({
             </DialogHeader>
             <div className="space-y-4">
               <Input
-                placeholder="Entry Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                placeholder="Chapter"
+                value={Chapter}
+                onChange={(e) => setChapter(e.target.value)}
+                className="w-full px-4 py-2 border rounded-md"
+              />
+              <Input
+               placeholder="Test Name"
+               value={testName}
+               onChange={(e)=> setTestName(e.target.value)}
+               className="w-full px-4 py-2 border rounded-md"
+              />
+              <Input
+                type="number"
+                placeholder="Marks"
+                onChange={(e) => setMaxMarks(e.target.value)}
                 className="w-full px-4 py-2 border rounded-md"
               />
               <Input
