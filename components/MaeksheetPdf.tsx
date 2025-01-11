@@ -132,7 +132,7 @@ const Header = ({ subject, chapter, standard, date, testName }: HeaderProps) => 
     <Text style={styles.subHeader}>{testName}</Text>
     <View style={styles.examInfo}>
       <Text>SUB - {subject}</Text>
-      <Text>CHAPTER - {chapter} </Text>
+      {chapter && <Text>CH - {chapter} </Text>}
       <Text>STD - {standard}</Text>
       <Text>DATE - {formatDate(date)}</Text>
     </View>
@@ -175,7 +175,7 @@ export function MarkSheetPDF({
                 <Text>Name</Text>
               </View>
               <View style={[styles.tableCell, styles.marks, styles.tableHeader]}>
-                <Text>Marks</Text>
+                <Text>Marks ({maxMarks})</Text>
               </View>
             </View>
             <TableHeader />

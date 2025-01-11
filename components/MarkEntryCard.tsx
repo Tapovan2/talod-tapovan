@@ -31,7 +31,7 @@ export function MarkEntryCard({
   const [MaxMarks, setMaxMarks] = useState("");
 
   const handleCreate = async () => {
-    if (Chapter && date) {
+    if (testName && date) {
       try {
         const response = await fetch("/api/mark-entries", {
           method: "POST",
@@ -92,15 +92,15 @@ export function MarkEntryCard({
             </DialogHeader>
             <div className="space-y-4">
               <Input
-                placeholder="Chapter"
-                value={Chapter}
-                onChange={(e) => setChapter(e.target.value)}
+                placeholder="Test Name"
+                value={testName}
+                onChange={(e) => setTestName(e.target.value)}
                 className="w-full px-4 py-2 border rounded-md"
               />
               <Input
-               placeholder="Test Name"
-               value={testName}
-               onChange={(e)=> setTestName(e.target.value)}
+               placeholder="Chapter Name"
+               value={Chapter}
+               onChange={(e)=> setChapter(e.target.value)}
                className="w-full px-4 py-2 border rounded-md"
               />
               <Input

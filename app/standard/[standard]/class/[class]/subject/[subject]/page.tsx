@@ -85,7 +85,7 @@ export default function SubjectPage({
     );
 
     const data = await res.json();
-    console.log("Mark-Entry", data);
+   
 
     if (!data) return;
 
@@ -157,9 +157,9 @@ export default function SubjectPage({
   const getPdfData = () => {
     return {
       subject: subjectName.toUpperCase(),
-      chapter: selectedEntry?.name || "",
-      testName:markEntries[0].test,
-      maxMarks: markEntries[0].MaxMarks,
+      chapter: selectedEntry?.test || "",
+      testName: selectedEntry?.name || "",
+      maxMarks: selectedEntry?.MaxMarks || 0,
       standard: params.standard,
       date: selectedEntry?.date || new Date().toLocaleDateString("en-GB"),
       entryName: selectedEntry?.name || "",

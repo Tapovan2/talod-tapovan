@@ -8,7 +8,7 @@ export const standards = {
       "Hindi",
       "General Knowledge",
 
-      "કમ્પ્યુટર",
+      "Computer",
     ],
   },
   "2": {

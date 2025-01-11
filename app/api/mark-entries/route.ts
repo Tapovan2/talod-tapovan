@@ -27,9 +27,9 @@ export async function POST(request: Request) {
 
   const markEntry = await prisma.markEntry.create({
     data: {
-      name: data.Chapter,
+      name: data.testName,
       date: new Date(data.date),
-      test:data.testName,
+      Chapter:data.Chapter,
       MaxMarks: parseInt(data.MaxMarks),
       standard: parseInt(data.standard),
       subject: data.subject,
