@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Logout from "./logout";
+import { ClientSideWrapper } from "@/components/ClientSideWrapper";
 
 const standards = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
@@ -25,6 +26,8 @@ export default async function Home() {
           </Link>
         ))}
       </div>
+      <ClientSideWrapper />
     </div>
+      
   );
 }
