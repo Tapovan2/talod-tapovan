@@ -44,11 +44,9 @@ export default function ClassPage({ params }: SubjectPageProps) {
           >
             <Card>
               <CardHeader>
-                <CardTitle>{subject}</CardTitle>
+                <CardTitle className="text-center">{subject}</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p>Manage marks for {subject}</p>
-              </CardContent>
+            
             </Card>
           </Link>
         ))}

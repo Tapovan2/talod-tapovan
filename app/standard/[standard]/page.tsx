@@ -22,11 +22,9 @@ export default async function StandardPage({ params }: StandardPageProps) {
           <Link href={`/standard/${standard}/class/${cls}`} key={cls}>
             <Card>
               <CardHeader>
-                <CardTitle>Class {cls}</CardTitle>
+                <CardTitle className="text-center">Class {cls}</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p>Manage marks for Class {cls}</p>
-              </CardContent>
+              
             </Card>
           </Link>
         ))}
