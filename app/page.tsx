@@ -18,11 +18,9 @@ export default async function Home() {
           <Link href={`/standard/${standard}`} key={standard}>
             <Card>
               <CardHeader>
-                <CardTitle>Standard {standard}</CardTitle>
+                <CardTitle className="text-center">Standard {standard}</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p>Manage marks for Standard {standard}</p>
-              </CardContent>
+              
             </Card>
           </Link>
         ))}
