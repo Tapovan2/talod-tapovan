@@ -16,12 +16,16 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  
   await prisma.academicHistory.deleteMany({
     where: { studentId: parseInt(params.id) },
   });
 
- 
+  await prisma.mark.deleteMany({
+    where: {
+      studentId: parseInt(params.id)
+    }
+  });
+
   await prisma.student.delete({
     where: { id: parseInt(params.id) },
   });

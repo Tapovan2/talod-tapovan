@@ -9,10 +9,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { standards } from "@/Data/index"
+import { Checkbox } from '@/components/ui/checkbox'
+import Link from 'next/link'
 
 export default function AdminPage() {
   const [students, setStudents] = useState<any[]>([])
   const [editingStudent, setEditingStudent] = useState<any>(null)
+  const [selectedStudents, setSelectedStudents] = useState<number[]>([])
+
   const [selectedStandard, setSelectedStandard] = useState<string>('')
   const [selectedClass, setSelectedClass] = useState<string>('')
   const [isAddStudentOpen, setIsAddStudentOpen] = useState(false)
@@ -61,6 +65,10 @@ export default function AdminPage() {
     }
   }
 
+  const selectedDelete = async () => {
+    
+  }
+
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const form = e.target as HTMLFormElement
@@ -99,6 +107,43 @@ export default function AdminPage() {
     setIsAddStudentOpen(false);
     fetchStudents();
   }
+
+  const handleStudentSelect = (studentId: number) => {
+    setSelectedStudents(prev => 
+      prev.includes(studentId) 
+        ? prev.filter(id => id !== studentId)
+        : [...prev, studentId]
+    )
+  }
+
+  const handleDeleteStudents = async () => {
+    if (selectedStandard !== '12') {
+      alert('Deletion is only allowed for students in standard 12')
+      return
+    }
+
+    const confirmDelete = window.confirm(`Are you sure you want to delete ${selectedStudents.length} student(s)?`)
+    if (!confirmDelete) return
+
+    const response = await fetch('/api/delete-students', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        studentIds: selectedStudents,
+      }),
+    })
+
+    if (response.ok) {
+      alert('Students deleted successfully')
+      setSelectedStudents([])
+      fetchStudents()
+    } else {
+      alert('Error deleting students')
+    }
+  }
+
 
   return (
     <div className="space-y-6">
@@ -142,6 +187,9 @@ export default function AdminPage() {
           )}
         </Button>
         <Button variant="outline" onClick={() => setIsAddStudentOpen(true)}>Add New Student</Button>
+        <Link href="/admin/excel">
+         <Button variant="default" >Excel</Button>
+        </Link>
       </form>
 
       <Dialog open={isAddStudentOpen} onOpenChange={setIsAddStudentOpen}>
@@ -170,6 +218,11 @@ export default function AdminPage() {
           </form>
         </DialogContent>
       </Dialog>
+      {selectedStudents.length >= 2 ? (
+        <Button onClick={handleDeleteStudents}>
+          Selected Delete
+        </Button>
+      ) : null}
 
       {students.length > 0 && (
         <Card>
@@ -185,6 +238,7 @@ export default function AdminPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>Checkbox</TableHead>
                     <TableHead>Roll No</TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Actions</TableHead>
@@ -193,6 +247,12 @@ export default function AdminPage() {
                 <TableBody>
                   {students.map((student) => (
                     <TableRow key={student.id}>
+                      <TableCell>
+                    <Checkbox
+                      checked={selectedStudents.includes(student.id)}
+                      onCheckedChange={() => handleStudentSelect(student.id)}
+                    />
+                  </TableCell>
                       <TableCell>{student.rollNo}</TableCell>
                       <TableCell>{student.name}</TableCell>
                       <TableCell>
@@ -228,7 +288,7 @@ export default function AdminPage() {
                               </form>
                             </DialogContent>
                           </Dialog>
-                          <Button variant="outline" size="sm" onClick={() => handleDelete(student.id)} disabled={loadingId === student.id}>
+                          <Button variant="destructive" size="sm" onClick={() => handleDelete(student.id)} disabled={loadingId === student.id}>
                             {loadingId === student.id ? 'Deleting...' : 'Delete'}
                           </Button>
                         </div>
