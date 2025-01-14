@@ -17,6 +17,8 @@ export function useMarkEntries(standard: string, subject: string) {
         `/api/mark-entries?standard=${standard}&subject=${subject}`
       );
       const data = await res.json();
+      console.log("data",data);
+      
       if (data) setMarkEntries(data);
     };
 

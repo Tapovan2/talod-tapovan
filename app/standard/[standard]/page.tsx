@@ -1,9 +1,6 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import prisma from "@/lib/prisma";
 import { StandardKey, standards } from "../../../Data/index";
-
-// This would come from a database in a real application
 
 interface StandardPageProps {
   params: { standard: StandardKey };

@@ -89,7 +89,7 @@ export const standards = {
     ],
   },
   "8": {
-    classes: ["Dhruv", "Nachiketa"],
+    classes: ["Dhruv", "Nachiketa","Foundation"],
     subjects: [
       "Mathematics",
       "Science",
@@ -104,7 +104,7 @@ export const standards = {
     ],
   },
   "9": {
-    classes: ["A", "B", "C"],
+    classes: ["A", "B","C", "Foundation"],
     subjects: [
       "Hindi",
       "Sanskrit",
