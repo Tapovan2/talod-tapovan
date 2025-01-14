@@ -35,8 +35,9 @@ export default function SubjectPage({
   const subjectName = decodeURIComponent(params.subject);
   const [selectedEntry, setSelectedEntry] = useState<MarkEntry | null>(null);
   const [isClient, setIsClient] = useState(false);
+  const [loadingEntry, setLoadingEntry] = useState(false);
 
-  const { students } = useStudents(params.standard, params.class);
+  const { students } = useStudents(params.standard, params.class,params.subject);
   const { markEntries, addMarkEntry } = useMarkEntries(params.standard, subjectName);
   const { marks, setMarks, submitMarks, loading } = useMarks(students, selectedEntry?.id || null);
 
@@ -52,12 +53,17 @@ export default function SubjectPage({
   }, [setMarks]);
 
   const handleCreateEntry = useCallback((newEntry: MarkEntry) => {
+    console.log("new-entry",newEntry);
+    
     addMarkEntry(newEntry);
     setSelectedEntry(newEntry);
   }, [addMarkEntry]);
 
   const handleSelectEntry = useCallback((entry: MarkEntry | null) => {
+    console.log("selected-entry", entry);
+    setLoadingEntry(true);
     setSelectedEntry(entry);
+    setLoadingEntry(false);
   }, []);
 
   const getPdfData = useCallback(() => {
@@ -100,13 +106,12 @@ export default function SubjectPage({
           value={selectedEntry?.id || ""}
           onChange={(e) => {
             const selectedId = e.target.value;
-
-            const selected = markEntries.find(
-              (entry) => entry.id == selectedId
-            );
+            const selected = markEntries.find(entry => entry.id == selectedId);
             console.log("selectedID", selected);
             
-            handleSelectEntry(selected || null);
+            if (selected) {
+                handleSelectEntry(selected);
+            }
           }}
         >
           <option value="" disabled>
@@ -127,6 +132,8 @@ export default function SubjectPage({
         </div>
       </div>
 
+      {loadingEntry && <div className="loader">Loading...</div>}
+
       {selectedEntry && (
         <>
           <Table>
@@ -134,7 +141,7 @@ export default function SubjectPage({
               <TableRow>
                 <TableHead>Roll No</TableHead>
                 <TableHead>Name</TableHead>
-                <TableHead>Mark</TableHead>
+                <TableHead>Mark ({selectedEntry.MaxMarks})</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -146,11 +153,16 @@ export default function SubjectPage({
                     <Input
                       type="text"
                       value={marks[student.id] || ""}
-                      onChange={(e) =>
-                        handleMarkChange(student.id, e.target.value)
+                      onChange={(e) =>{
+                        const value = e.target.value;
+                        const markValue = value.trim() === "" ? "AB" : value;
+                        if ((/^\d*$/.test(value) || value === "AB") && (parseInt(value) <= selectedEntry.MaxMarks || value === "" || value === "AB")) {
+                          handleMarkChange(student.id, markValue);
+                        }
+                      }
                       }
                       min="0"
-                      max="30"
+                      max={selectedEntry.MaxMarks}
                       className="w-[80px] border-2 border-gray-500 rounded-md p-2"
                     />
                   </TableCell>

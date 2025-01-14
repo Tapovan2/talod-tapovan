@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 
-export function useStudents(standard: string, classId: string) {
+export function useStudents(standard: string, classId: string, subject: string) {
   const [students, setStudents] = useState([]);
+  console.log("classId",classId);
+  
 //hook
   useEffect(() => {
     const fetchStudents = async () => {
       try {
         const res = await fetch(
-          `/api/students?standard=${standard}&class=${classId}`
+          `/api/students?standard=${standard}&class=${classId}&subject=${subject}`
         );
         if (!res.ok) throw new Error("Failed to fetch students");
 
@@ -19,7 +21,7 @@ export function useStudents(standard: string, classId: string) {
     };
 
     fetchStudents();
-  }, [standard, classId]);
+  }, [standard, classId, subject]);
 
   return { students };
 }

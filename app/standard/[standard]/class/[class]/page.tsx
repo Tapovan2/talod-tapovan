@@ -15,9 +15,11 @@ export default function ClassPage({ params }: SubjectPageProps) {
 
   const { subjects } = classData;
 
-  // Conditional filtering for standards 11 and 12 only
+
   const filteredSubjects =
-    (standard == "11" || standard == "12") && cls === "Maths"
+    (standard === "8" || standard === "9") && cls === "Foundation"
+      ? [...subjects, "Physics", "Chemistry"]
+      : (standard == "11" || standard == "12") && cls === "Maths"
       ? subjects.filter((subject) =>
           ["Chemistry", "Physics", "Maths", "Computer", "English"].includes(
             subject.trim()
@@ -25,7 +27,7 @@ export default function ClassPage({ params }: SubjectPageProps) {
         )
       : (standard === "11" || standard === "12") && cls === "Biology"
       ? subjects.filter((subject) =>
-          ["Chemistry", "Physics", "Biology", "Computer", "English"].includes(
+          ["Biology", "Sanskrit"].includes(
             subject.trim()
           )
         )

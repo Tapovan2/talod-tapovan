@@ -5,13 +5,28 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const standard = searchParams.get("standard");
   const classParam = searchParams.get("class");
+  const subject = searchParams.get("subject");
 
-  const students = await prisma.student.findMany({
-    where: {
-      currentStandard: standard ? parseInt(standard) : undefined,
-      currentClass: classParam || undefined,
-    },
-  });
+  
+
+  let students;
+
+  if ((subject === "Chemistry" || subject === "Physics") && (standard === "11" || standard === "12")) {
+    students = await prisma.student.findMany({
+      where: {
+        currentStandard: standard ? parseInt(standard) : undefined,
+        
+      },
+    });
+  } else {
+    students = await prisma.student.findMany({
+      where: {
+        currentStandard: standard ? parseInt(standard) : undefined,
+        currentClass: classParam || undefined,
+      },
+    });
+  }
+
   //@ts-expect-error
   const sortedStudents = students.sort((a, b) => a.rollNo - b.rollNo);
 
@@ -20,7 +35,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const data = await request.json();
-  console.log("data",data);
+  
   
   const student = await prisma.student.create({
     data: {
