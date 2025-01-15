@@ -53,14 +53,14 @@ export default function SubjectPage({
   }, [setMarks]);
 
   const handleCreateEntry = useCallback((newEntry: MarkEntry) => {
-    console.log("new-entry",newEntry);
+    
     
     addMarkEntry(newEntry);
     setSelectedEntry(newEntry);
   }, [addMarkEntry]);
 
   const handleSelectEntry = useCallback((entry: MarkEntry | null) => {
-    console.log("selected-entry", entry);
+    
     setLoadingEntry(true);
     setSelectedEntry(entry);
     setLoadingEntry(false);
@@ -145,29 +145,40 @@ export default function SubjectPage({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {students.map((student: any) => (
-                <TableRow key={student.id}>
-                  <TableCell>{student.rollNo}</TableCell>
-                  <TableCell>{student.name}</TableCell>
-                  <TableCell>
-                    <Input
-                      type="text"
-                      value={marks[student.id] || ""}
-                      onChange={(e) =>{
-                        const value = e.target.value;
-                        const markValue = value.trim() === "" ? "AB" : value;
-                        if ((/^\d*$/.test(value) || value === "AB") && (parseInt(value) <= selectedEntry.MaxMarks || value === "" || value === "AB")) {
-                          handleMarkChange(student.id, markValue);
-                        }
-                      }
-                      }
-                      min="0"
-                      max={selectedEntry.MaxMarks}
-                      className="w-[80px] border-2 border-gray-500 rounded-md p-2"
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
+  {students.map((student: any) => (
+    <TableRow key={student.id}>
+      <TableCell>{student.rollNo}</TableCell>
+      <TableCell>{student.name}</TableCell>
+      <TableCell>
+        <Input
+          type="text"
+          value={marks[student.id] || ""} // Ensure it starts as an empty string
+          onChange={(e) => {
+            const value = e.target.value;
+            // Allow any input for editing
+            handleMarkChange(student.id, value);
+          }}
+          onBlur={() => {
+            const currentValue = marks[student.id] || "";
+            // Validate the value when the input loses focus
+            if (currentValue.trim() === "") {
+              handleMarkChange(student.id,""); // Set to "AB" if empty
+            } else if (parseInt(currentValue) > selectedEntry.MaxMarks) {
+              alert(`Max marks allowed is ${selectedEntry.MaxMarks}. Please enter a valid value.`);
+              handleMarkChange(student.id, ""); // Reset to "AB" if exceeds max
+            } else if ((/^\d*$/.test(currentValue) || currentValue === "AB") && 
+                       (parseInt(currentValue) <= selectedEntry.MaxMarks || currentValue === "")) {
+             
+           
+                       }
+          }}
+          min="0"
+          max={selectedEntry.MaxMarks}
+          className="w-[80px] border-2 border-gray-500 rounded-md p-2"
+        />
+      </TableCell>
+    </TableRow>
+  ))}
             </TableBody>
           </Table>
           <div className="flex justify-between mt-4">
