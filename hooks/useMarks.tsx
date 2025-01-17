@@ -43,7 +43,7 @@ export function useMarks(students: Student[], markEntryId: string | null) {
 
       const res = await fetch(`/api/marks?markEntryId=${markEntryId}`);
       const data = await res.json();
-      console.log("marks", data);
+   
       
       if (data.length === 0) {
         return;
