@@ -22,6 +22,7 @@ import { useMarks } from "@/hooks/useMarks";
 interface MarkEntry {
   id: string;
   name: string;
+  Chapter?:string;
   test: string;
   MaxMarks: number;
   date: string;
@@ -67,9 +68,11 @@ export default function SubjectPage({
   }, []);
 
   const getPdfData = useCallback(() => {
+    console.log("data",selectedEntry);
+    
     return {
       subject: subjectName.toUpperCase(),
-      chapter: selectedEntry?.test || "",
+      chapter: selectedEntry?.Chapter || "",
       testName: selectedEntry?.name || "",
       maxMarks: selectedEntry?.MaxMarks || 0,
       standard: params.standard,
