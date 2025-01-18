@@ -15,12 +15,14 @@ import {
 
 interface MarkEntryCardProps {
   standard: string;
+  className:string;
   subject: string;
   onCreateEntry: (entry: any) => void;
 }
 
 export function MarkEntryCard({
   standard,
+  className,
   subject,
   onCreateEntry,
 }: MarkEntryCardProps) {
@@ -43,6 +45,7 @@ export function MarkEntryCard({
             testName,
             date,
             standard,
+            className,
             subject,
             MaxMarks,
           }),

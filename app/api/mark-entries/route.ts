@@ -5,10 +5,12 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const standard = searchParams.get("standard");
   const subject = searchParams.get("subject");
+  const className = searchParams.get("className");
 
   const markEntries = await prisma.markEntry.findMany({
     where: {
       standard: standard ? parseInt(standard) : undefined,
+      class:className || undefined,
       subject: subject || undefined,
     },
   });
@@ -32,6 +34,7 @@ export async function POST(request: Request) {
       Chapter:data.Chapter,
       MaxMarks: parseInt(data.MaxMarks),
       standard: parseInt(data.standard),
+      class:data.className,
       subject: data.subject,
     },
   });

@@ -39,7 +39,7 @@ export default function SubjectPage({
   const [loadingEntry, setLoadingEntry] = useState(false);
 
   const { students } = useStudents(params.standard, params.class,params.subject);
-  const { markEntries, addMarkEntry } = useMarkEntries(params.standard, subjectName);
+  const { markEntries, addMarkEntry } = useMarkEntries(params.standard, subjectName,params.class);
   const { marks, setMarks, submitMarks, loading } = useMarks(students, selectedEntry?.id || null);
 
   useEffect(() => {
@@ -129,6 +129,7 @@ export default function SubjectPage({
         <div className="ml-2">
           <MarkEntryCard
             standard={params.standard}
+            className={params.class}
             subject={subjectName}
             onCreateEntry={handleCreateEntry}
           />
