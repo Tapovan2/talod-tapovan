@@ -129,6 +129,7 @@ model MarkEntry {
   name       String
   date       DateTime
   standard   Int
+  class    String
   Chapter   String? @default("")
  
   MaxMarks Int

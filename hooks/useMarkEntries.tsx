@@ -8,13 +8,13 @@ interface MarkEntry {
   date: string;
 }
 
-export function useMarkEntries(standard: string, subject: string) {
+export function useMarkEntries(standard: string, subject: string,className:string) {
   const [markEntries, setMarkEntries] = useState<MarkEntry[]>([]);
 
   useEffect(() => {
     const fetchMarkEntries = async () => {
       const res = await fetch(
-        `/api/mark-entries?standard=${standard}&subject=${subject}`
+        `/api/mark-entries?standard=${standard}&subject=${subject}&className=${className}`
       );
       const data = await res.json();
       console.log("data",data);
