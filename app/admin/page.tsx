@@ -194,6 +194,9 @@ export default function AdminPage() {
         <Link href="/admin/excel">
          <Button variant="default" >Excel</Button>
         </Link>
+        <Link href="/admin/performance">
+         <Button variant="default" >Performance</Button>
+        </Link>
       </form>
 
       <Dialog open={isAddStudentOpen} onOpenChange={setIsAddStudentOpen}>

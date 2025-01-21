@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { redis } from "@/lib/redis";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const markEntryId = searchParams.get("markEntryId");
+
 
   if (!markEntryId) {
     return NextResponse.json(
@@ -11,6 +13,8 @@ export async function GET(request: Request) {
       { status: 400 }
     );
   }
+
+  try{
 
   const marks = await prisma.mark.findMany({
     where: {
@@ -24,10 +28,19 @@ export async function GET(request: Request) {
   });
 
   return NextResponse.json(marks);
+}catch(e:any){
+  throw new Error(e)
+}finally{
+  await prisma.$disconnect();
 }
+}
+
 
 export async function POST(request: Request) {
   const data = await request.json();
+  
+
+  try{
 
   const marks = await Promise.all(
     data.map(
@@ -90,4 +103,9 @@ export async function POST(request: Request) {
   );
 
   return NextResponse.json(marks);
+}catch(e:any){
+  throw new Error(e)
+}finally{
+  await prisma.$disconnect()
+}
 }
