@@ -1,12 +1,23 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
+
 export async function GET(request: Request) {
+  
   const { searchParams } = new URL(request.url);
   const standard = searchParams.get("standard");
   const classParam = searchParams.get("class");
   const subject = searchParams.get("subject");
 
+  // const cacheKey = `student-${standard}-${classParam}`;
+
+  // const cachedData = await redis.get(cacheKey);
+
+  // if(cachedData){
+  //   return NextResponse.json(cachedData)
+  // }
+
+ 
   
 
   let students;
@@ -29,6 +40,8 @@ export async function GET(request: Request) {
 
   //@ts-expect-error
   const sortedStudents = students.sort((a, b) => a.rollNo - b.rollNo);
+
+  // await redis.set(cacheKey, JSON.stringify(sortedStudents), { ex: 21600 });
 
   return NextResponse.json(sortedStudents);
 }

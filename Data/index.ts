@@ -154,3 +154,4 @@ export const standards = {
 
 export type StandardKey = keyof typeof standards;
 export type ClassData = (typeof standards)[StandardKey];
+export type Subject = (typeof standards)[StandardKey];

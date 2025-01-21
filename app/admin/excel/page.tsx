@@ -45,10 +45,12 @@ export default function MarkEntriesPage() {
   
 
   const fetchMarkEntries = async (standard: string, className: string) => {
+    console.log("className",className);
+    
      setfLoading(true)
     
      
-    const response = await fetch(`/api/mark-entries?standard=${standard}&class=${className}`)
+    const response = await fetch(`/api/mark-entries?standard=${standard}&className=${className}`)
     const data = await response.json()
     setMarkEntries(data)
     setfLoading(false);
@@ -164,12 +166,14 @@ export default function MarkEntriesPage() {
            ))}
          </SelectContent>
        </Select>
-     </div>
-     <Button onClick={handleFetchStudents} disabled={!currentStandard || !currentClass || fLoading}>
+       <Button onClick={handleFetchStudents} disabled={!currentStandard || !currentClass || fLoading}>
         {
           fLoading ? "fetching..." : "Fetch"
         } 
       </Button>
+     </div>
+     
+     
       {markEntries.length > 0 && (
         <Card>
           <CardHeader>
