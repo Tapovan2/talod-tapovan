@@ -4,6 +4,8 @@ import { redis } from "@/lib/redis";
 
 export const dynamic = "force-dynamic"
 
+const date = new Date()
+
 interface ExamDetail {
   examName: string;
   date: Date;
@@ -26,7 +28,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Standard and class are required" }, { status: 400 })
   }
 
-  const cacheKey = `report-${standard}-${classParam}`
+  const cacheKey = `report-${standard}-${classParam}-${date}`
 
   const cachedData = await redis.get(cacheKey);
 
