@@ -6,6 +6,14 @@ export const dynamic = "force-dynamic"
 
 const date = new Date()
 
+const formatedDate = date.toLocaleDateString("en-US", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "2-digit",
+})
+
+console.log("date",formatedDate);
+
 interface ExamDetail {
   examName: string;
   date: Date;
@@ -28,7 +36,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Standard and class are required" }, { status: 400 })
   }
 
-  const cacheKey = `report-${standard}-${classParam}-${date}`
+  const cacheKey = `report-${standard}-${classParam}-${formatedDate}`
 
   const cachedData = await redis.get(cacheKey);
 
