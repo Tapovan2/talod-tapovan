@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,9 +26,7 @@ export default function AttendancePage() {
   const standard = params.standard as string;
   const classParam = params.class as string;
   const subject = params.subject as string;
-  const [date, setDate] = useState<Date>(
-    new Date(new Date().setHours(0, 0, 0, 0))
-  );
+  const [date, setDate] = useState<Date | null>(null);
   const [attendance, setAttendance] = useState<{ [key: string]: string }>({});
   const { students, isLoading: isLoadingStudents } = useStudents(
     standard,
@@ -37,6 +35,21 @@ export default function AttendancePage() {
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+
+  const isSunday = useCallback((date: Date) => date.getDay() === 0, []);
+
+  useEffect(() => {
+    const setInitialDate = () => {
+      const initialDate = new Date();
+      initialDate.setHours(0, 0, 0, 0);
+      while (isSunday(initialDate)) {
+        initialDate.setDate(initialDate.getDate() + 1);
+      }
+      setDate(initialDate);
+    };
+
+    setInitialDate();
+  }, [isSunday]);
 
   const handleAttendanceChange = (studentId: string, value: string) => {
     setAttendance((prev) => ({ ...prev, [studentId]: value }));
@@ -48,6 +61,16 @@ export default function AttendancePage() {
       toast({
         title: "Error",
         description: "Please select a date",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (isSunday(date)) {
+      toast({
+        title: "Error",
+        description: "Attendance cannot be marked on Sundays",
         variant: "destructive",
       });
       setIsSubmitting(false);
@@ -83,15 +106,16 @@ export default function AttendancePage() {
       const data = await response.json();
       if (data.success) {
         alert("Attendance marked successfully");
+
         toast({
           title: "Success",
           description: "Attendance marked successfully",
         });
       } else {
-        alert("Failed to mark attendance");
         throw new Error("Failed to mark attendance");
       }
     } catch (error) {
+      alert("Failed to mark attendance");
       toast({
         title: "Error",
         description: "Failed to mark attendance",
@@ -118,13 +142,9 @@ export default function AttendancePage() {
           <CardContent>
             <Calendar
               mode="single"
-              selected={date}
-              onDayClick={(day) => {
-                const adjustedDate = new Date(
-                  day.setMinutes(day.getMinutes() - day.getTimezoneOffset())
-                );
-                setDate(adjustedDate);
-              }}
+              selected={date || undefined}
+              onSelect={(day) => setDate(day || null)}
+              disabled={(date) => isSunday(date)}
               className="rounded-md border"
             />
           </CardContent>
@@ -139,7 +159,7 @@ export default function AttendancePage() {
               <div className="flex justify-center items-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
-            ) : (
+            ) : date && !isSunday(date) ? (
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -193,6 +213,14 @@ export default function AttendancePage() {
                   ))}
                 </TableBody>
               </Table>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-lg font-medium text-gray-600">
+                  {date && isSunday(date)
+                    ? "Attendance is not marked on Sundays."
+                    : "Please select a date to mark attendance."}
+                </p>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -201,7 +229,12 @@ export default function AttendancePage() {
       <div className="flex items-center justify-center">
         <Button
           onClick={handleSubmitAttendance}
-          disabled={isSubmitting || isLoadingStudents}
+          disabled={
+            isSubmitting ||
+            isLoadingStudents ||
+            !date ||
+            (date && isSunday(date))
+          }
         >
           {isSubmitting ? (
             <>

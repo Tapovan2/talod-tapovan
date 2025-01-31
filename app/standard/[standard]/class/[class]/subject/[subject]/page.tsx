@@ -19,12 +19,18 @@ import { useStudents } from "@/hooks/useStudents";
 import { useMarkEntries } from "@/hooks/useMarkEntries";
 import { useMarks } from "@/hooks/useMarks";
 import { Card, CardContent } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface MarkEntry {
   id: string;
   name: string;
-  Chapter?:string;
+  Chapter?: string;
   test: string;
   MaxMarks: number;
   date: string;
@@ -40,38 +46,52 @@ export default function SubjectPage({
   const [isClient, setIsClient] = useState(false);
   const [loadingEntry, setLoadingEntry] = useState(false);
 
-  const { students } = useStudents(params.standard, params.class,params.subject);
-  const { markEntries, addMarkEntry } = useMarkEntries(params.standard, subjectName,params.class);
-  const { marks, setMarks, submitMarks, loading } = useMarks(students, selectedEntry?.id || null);
+  const { students } = useStudents(
+    params.standard,
+    params.class,
+    params.subject
+  );
+  const { markEntries, addMarkEntry } = useMarkEntries(
+    params.standard,
+    subjectName,
+    params.class
+  );
+  const { marks, setMarks, submitMarks, loading } = useMarks(
+    students,
+    selectedEntry?.id || null
+  );
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  const handleMarkChange = useCallback((studentId: string, value: string) => {
-    setMarks((prevMarks) => ({
-      ...prevMarks,
-      [studentId]: value,
-    }));
-  }, [setMarks]);
+  const handleMarkChange = useCallback(
+    (studentId: string, value: string) => {
+      setMarks((prevMarks) => ({
+        ...prevMarks,
+        [studentId]: value,
+      }));
+    },
+    [setMarks]
+  );
 
-  const handleCreateEntry = useCallback((newEntry: MarkEntry) => {
-    
-    
-    addMarkEntry(newEntry);
-    setSelectedEntry(newEntry);
-  }, [addMarkEntry]);
+  const handleCreateEntry = useCallback(
+    (newEntry: MarkEntry) => {
+      addMarkEntry(newEntry);
+      setSelectedEntry(newEntry);
+    },
+    [addMarkEntry]
+  );
 
   const handleSelectEntry = useCallback((entry: MarkEntry | null) => {
-    
     setLoadingEntry(true);
     setSelectedEntry(entry);
     setLoadingEntry(false);
   }, []);
 
   const getPdfData = useCallback(() => {
-    console.log("data",selectedEntry);
-    
+    console.log("data", selectedEntry);
+
     return {
       subject: subjectName.toUpperCase(),
       chapter: selectedEntry?.Chapter || "",
@@ -94,7 +114,10 @@ export default function SubjectPage({
       <Breadcrumbs
         items={[
           { label: "Home", href: "/" },
-          { label: `Standard ${params.standard}`, href: `/standard/${params.standard}` },
+          {
+            label: `Standard ${params.standard}`,
+            href: `/standard/${params.standard}`,
+          },
           { label: subjectName, href: "#" },
         ]}
       />
@@ -105,9 +128,11 @@ export default function SubjectPage({
             <Select
               value={selectedEntry?.id || ""}
               onValueChange={(value) => {
-                const selected = markEntries.find((entry) => entry.id === value)
+                const selected = markEntries.find(
+                  (entry) => entry.id === value
+                );
                 if (selected) {
-                  handleSelectEntry(selected)
+                  handleSelectEntry(selected);
                 }
               }}
             >
@@ -116,14 +141,23 @@ export default function SubjectPage({
               </SelectTrigger>
               <SelectContent className="bg-slate-800 border-slate-700">
                 {markEntries.map((entry) => (
-                  <SelectItem key={entry.id} value={entry.id} className="hover:bg-slate-700 focus:bg-slate-700">
+                  <SelectItem
+                    key={entry.id}
+                    value={entry.id}
+                    className="hover:bg-slate-700 focus:bg-slate-700"
+                  >
                     {entry.name} - {new Date(entry.date).toLocaleDateString()}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
-            <MarkEntryCard standard={params.standard} className={params.class} subject={subjectName} onCreateEntry={handleCreateEntry} />
+            <MarkEntryCard
+              standard={params.standard}
+              className={params.class}
+              subject={subjectName}
+              onCreateEntry={handleCreateEntry}
+            />
           </div>
 
           {loadingEntry && (
@@ -140,26 +174,39 @@ export default function SubjectPage({
                     <TableRow className="border-slate-700">
                       <TableHead className="text-slate-200">Roll No</TableHead>
                       <TableHead className="text-slate-200">Name</TableHead>
-                      <TableHead className="text-slate-200">Mark ({selectedEntry.MaxMarks})</TableHead>
+                      <TableHead className="text-slate-200">
+                        Mark ({selectedEntry.MaxMarks})
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {students.map((student: any) => (
                       <TableRow key={student.id} className="border-slate-800">
-                        <TableCell className="text-slate-300">{student.rollNo}</TableCell>
-                        <TableCell className="text-slate-300">{student.name}</TableCell>
+                        <TableCell className="text-slate-300">
+                          {student.rollNo}
+                        </TableCell>
+                        <TableCell className="text-slate-300">
+                          {student.name}
+                        </TableCell>
                         <TableCell>
                           <Input
                             type="text"
                             value={marks[student.id] || ""}
-                            onChange={(e) => handleMarkChange(student.id, e.target.value)}
+                            onChange={(e) =>
+                              handleMarkChange(student.id, e.target.value)
+                            }
                             onBlur={() => {
-                              const currentValue = marks[student.id] || ""
+                              const currentValue = marks[student.id] || "";
                               if (currentValue.trim() === "") {
-                                handleMarkChange(student.id, "")
-                              } else if (Number.parseInt(currentValue) > selectedEntry.MaxMarks) {
-                                alert(`Max marks allowed is ${selectedEntry.MaxMarks}. Please enter a valid value.`)
-                                handleMarkChange(student.id, "")
+                                handleMarkChange(student.id, "");
+                              } else if (
+                                Number.parseInt(currentValue) >
+                                selectedEntry.MaxMarks
+                              ) {
+                                alert(
+                                  `Max marks allowed is ${selectedEntry.MaxMarks}. Please enter a valid value.`
+                                );
+                                handleMarkChange(student.id, "");
                               }
                             }}
                             className="w-[80px] bg-slate-800 border-slate-700 text-slate-200"
@@ -172,8 +219,6 @@ export default function SubjectPage({
               </div>
 
               <div className="flex justify-between mt-6">
-               
-
                 {isClient && (
                   <PDFDownloadLink
                     document={<MarkSheetPDF {...getPdfData()} />}
@@ -181,13 +226,20 @@ export default function SubjectPage({
                   >
                     {/*@ts-ignore */}
                     {({ loading }) => (
-                      <Button disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white">
+                      <Button
+                        disabled={loading}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
                         {loading ? "Generating PDF..." : "Download PDF"}
                       </Button>
                     )}
                   </PDFDownloadLink>
                 )}
-                 <Button onClick={submitMarks} disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white">
+                <Button
+                  onClick={submitMarks}
+                  disabled={loading}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
                   {loading ? "Saving..." : "Save Marks"}
                 </Button>
               </div>
@@ -198,4 +250,3 @@ export default function SubjectPage({
     </div>
   );
 }
-
