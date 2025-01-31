@@ -1,6 +1,5 @@
 "use client";
-
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,16 +16,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Loader2 } from "lucide-react";
-
 import { useStudents } from "@/hooks/useStudents";
-
 export default function AttendancePage() {
   const params = useParams();
-
   const standard = params.standard as string;
   const classParam = params.class as string;
   const subject = params.subject as string;
-  const [date, setDate] = useState<Date | null>(null);
+  const [date, setDate] = useState<Date>(
+    new Date(new Date().setHours(0, 0, 0, 0))
+  );
   const [attendance, setAttendance] = useState<{ [key: string]: string }>({});
   const { students, isLoading: isLoadingStudents } = useStudents(
     standard,
@@ -35,26 +33,9 @@ export default function AttendancePage() {
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-
-  const isSunday = useCallback((date: Date) => date.getDay() === 0, []);
-
-  useEffect(() => {
-    const setInitialDate = () => {
-      const initialDate = new Date();
-      initialDate.setHours(0, 0, 0, 0);
-      while (isSunday(initialDate)) {
-        initialDate.setDate(initialDate.getDate() + 1);
-      }
-      setDate(initialDate);
-    };
-
-    setInitialDate();
-  }, [isSunday]);
-
   const handleAttendanceChange = (studentId: string, value: string) => {
     setAttendance((prev) => ({ ...prev, [studentId]: value }));
   };
-
   const handleSubmitAttendance = async () => {
     setIsSubmitting(true);
     if (!date) {
@@ -66,23 +47,11 @@ export default function AttendancePage() {
       setIsSubmitting(false);
       return;
     }
-
-    if (isSunday(date)) {
-      toast({
-        title: "Error",
-        description: "Attendance cannot be marked on Sundays",
-        variant: "destructive",
-      });
-      setIsSubmitting(false);
-      return;
-    }
-
     try {
       const attendanceData = students.map((student: any) => ({
         studentId: student.id,
         status: attendance[student.id] || "P", // Default to "P" if not explicitly marked
       }));
-
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_API}/attendance`,
         {
@@ -98,24 +67,21 @@ export default function AttendancePage() {
           }),
         }
       );
-
       if (!response.ok) {
         throw new Error("Failed to mark attendance");
       }
-
       const data = await response.json();
       if (data.success) {
         alert("Attendance marked successfully");
-
         toast({
           title: "Success",
           description: "Attendance marked successfully",
         });
       } else {
+        alert("Failed to mark attendance");
         throw new Error("Failed to mark attendance");
       }
     } catch (error) {
-      alert("Failed to mark attendance");
       toast({
         title: "Error",
         description: "Failed to mark attendance",
@@ -125,7 +91,6 @@ export default function AttendancePage() {
       setIsSubmitting(false);
     }
   };
-
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -133,7 +98,6 @@ export default function AttendancePage() {
           Attendance - Standard {standard} Class {classParam}
         </h1>
       </div>
-
       <div className="grid md:grid-cols-[300px,1fr] gap-6">
         <Card className="md:sticky md:top-6 h-fit">
           <CardHeader>
@@ -142,14 +106,17 @@ export default function AttendancePage() {
           <CardContent>
             <Calendar
               mode="single"
-              selected={date || undefined}
-              onSelect={(day) => setDate(day || null)}
-              disabled={(date) => isSunday(date)}
+              selected={date}
+              onDayClick={(day) => {
+                const adjustedDate = new Date(
+                  day.setMinutes(day.getMinutes() - day.getTimezoneOffset())
+                );
+                setDate(adjustedDate);
+              }}
               className="rounded-md border"
             />
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader>
             <CardTitle>Mark Attendance</CardTitle>
@@ -159,7 +126,7 @@ export default function AttendancePage() {
               <div className="flex justify-center items-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
-            ) : date && !isSunday(date) ? (
+            ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -213,28 +180,14 @@ export default function AttendancePage() {
                   ))}
                 </TableBody>
               </Table>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-lg font-medium text-gray-600">
-                  {date && isSunday(date)
-                    ? "Attendance is not marked on Sundays."
-                    : "Please select a date to mark attendance."}
-                </p>
-              </div>
             )}
           </CardContent>
         </Card>
       </div>
-
       <div className="flex items-center justify-center">
         <Button
           onClick={handleSubmitAttendance}
-          disabled={
-            isSubmitting ||
-            isLoadingStudents ||
-            !date ||
-            (date && isSunday(date))
-          }
+          disabled={isSubmitting || isLoadingStudents}
         >
           {isSubmitting ? (
             <>
