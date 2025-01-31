@@ -1,30 +1,50 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { useToast } from "@/hooks/use-toast"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { standards } from "@/Data"
-import { PDFDownloadLink } from "@react-pdf/renderer"
-import { StudentReportPDF } from "@/components/StudentReportPdf"
+import { useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { standards } from "@/Data";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import { StudentReportPDF } from "@/components/StudentReportPdf";
 
 export default function PerformanceReportPage() {
-  const [selectedStandard, setSelectedStandard] = useState<string>("")
-  const [selectedClass, setSelectedClass] = useState<string>("")
-  const [reportData, setReportData] = useState<any>()
-  const [loading, setLoading] = useState(false)
-  const { toast } = useToast()
+  const [selectedStandard, setSelectedStandard] = useState<string>("");
+  const [selectedClass, setSelectedClass] = useState<string>("");
+  const [reportData, setReportData] = useState<any>();
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
   const handleStandardChange = (value: string) => {
-    setSelectedStandard(value)
-    setSelectedClass("")
-  }
+    setSelectedStandard(value);
+    setSelectedClass("");
+  };
 
-  const STANDARDS = Object.keys(standards)
-  const CLASSES = selectedStandard ? standards[selectedStandard as keyof typeof standards]?.classes || [] : []
+  const STANDARDS = Object.keys(standards);
+  const CLASSES = selectedStandard
+    ? standards[selectedStandard as keyof typeof standards]?.classes || []
+    : [];
 
   const generateReport = async () => {
     if (!selectedStandard || !selectedClass) {
@@ -32,42 +52,107 @@ export default function PerformanceReportPage() {
         title: "Error",
         description: "Please select standard and class.",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
     try {
-      const response = await fetch("/api/performance", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          standard: selectedStandard,
-          classParam: selectedClass,
+      const [performanceResponse, attendanceResponse] = await Promise.all([
+        fetch("/api/performance", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            standard: selectedStandard,
+            classParam: selectedClass,
+          }),
         }),
-      })
+        fetch(
+          `${
+            process.env.NEXT_PUBLIC_BACKEND_API
+          }/pattendance?standard=${selectedStandard}&class=${selectedClass}&month=${new Date().getMonth()}&year=${new Date().getFullYear()}`
+        ),
+      ]);
 
-      if (!response.ok) {
-        throw new Error("Failed to generate report")
+      if (!performanceResponse.ok || !attendanceResponse.ok) {
+        throw new Error("Failed to generate report");
       }
 
-      const data = await response.json()
-      setReportData(data)
+      const performanceData = await performanceResponse.json();
+      const attendanceData = await attendanceResponse.json();
+
+      console.log("Performance Data:", performanceData);
+      console.log("Attendance Data:", attendanceData);
+
+      // Process attendance data
+      const processedAttendanceData = attendanceData.reduce(
+        (acc: any, curr: any) => {
+          if (!acc[curr.studentId]) {
+            acc[curr.studentId] = {
+              totalAttendance: 0,
+              presentAttendance: 0,
+              absentAttendance: 0,
+              absentDates: [],
+            };
+          }
+          acc[curr.studentId].totalAttendance++;
+          if (curr.status === "P") {
+            acc[curr.studentId].presentAttendance++;
+          } else if (curr.status === "A") {
+            acc[curr.studentId].absentAttendance++;
+            acc[curr.studentId].absentDates.push({
+              date: curr.date,
+              reason: curr.reason || "Not specified",
+            });
+          }
+          return acc;
+        },
+        {}
+      );
+
+      console.log("Processed Attendance Data:", processedAttendanceData);
+
+      // Merge performance and attendance data
+      const mergedData = {
+        ...performanceData,
+        students: performanceData.students.map((student: any) => {
+          const studentAttendance = processedAttendanceData[student.studentId];
+          if (!studentAttendance) {
+            console.warn(
+              `No attendance data found for student ID: ${student.studentId}`
+            );
+          }
+          return {
+            ...student,
+            attendance: studentAttendance || {
+              totalAttendance: 0,
+              presentAttendance: 0,
+              absentAttendance: 0,
+              absentDates: [],
+            },
+          };
+        }),
+      };
+
+      console.log("Merged Data:", JSON.stringify(mergedData, null, 2));
+
+      setReportData(mergedData);
       toast({
         title: "Report Generated",
-        description: "Complete performance report has been generated successfully.",
-      })
+        description:
+          "Complete performance report has been generated successfully.",
+      });
     } catch (error) {
-      console.error("Error generating report:", error)
+      console.error("Error generating report:", error);
       toast({
         title: "Error",
         description: "Failed to generate report. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -98,16 +183,32 @@ export default function PerformanceReportPage() {
           </SelectContent>
         </Select>
         <Button onClick={generateReport} disabled={loading}>
-          {loading ?(
+          {loading ? (
             <>
-              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <svg
+                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
               </svg>
               Generating...
             </>
           ) : (
-            'Generate Report'
+            "Generate Report"
           )}
         </Button>
       </div>
@@ -126,31 +227,87 @@ export default function PerformanceReportPage() {
                     </AccordionTrigger>
                     <AccordionContent>
                       <div className="space-y-4">
-                        {Object.entries(student.subjects).map(([subject, details]: [string, any]) => (
-                          <div key={subject}>
-                            <h4 className="font-semibold mt-4">{subject} Test Details</h4>
-                            <Table>
-                              <TableHeader>
-                                <TableRow>
-                                  <TableHead>Test Name</TableHead>
-                                  <TableHead>Date</TableHead>
-                                  <TableHead>Score</TableHead>
-                                  <TableHead>Max Marks</TableHead>
-                                </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                {details.examDetails.map((exam: any, index: number) => (
-                                  <TableRow key={index}>
-                                    <TableCell>{exam.examName}</TableCell>
-                                    <TableCell>{new Date(exam.date).toLocaleDateString()}</TableCell>
-                                    <TableCell>{exam.score}</TableCell>
-                                    <TableCell>{exam.maxMarks}</TableCell>
+                        <div>
+                          <h4 className="font-semibold mt-4">
+                            Attendance Overview
+                          </h4>
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Total Days</TableHead>
+                                <TableHead>Present Days</TableHead>
+                                <TableHead>Absent Days</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              <TableRow>
+                                <TableCell>
+                                  {student.attendance.totalAttendance}
+                                </TableCell>
+                                <TableCell>
+                                  {student.attendance.presentAttendance}
+                                </TableCell>
+                                <TableCell>
+                                  {student.attendance.absentAttendance}
+                                </TableCell>
+                              </TableRow>
+                            </TableBody>
+                          </Table>
+                          {student.attendance.absentDates.length > 0 && (
+                            <>
+                              <h5 className="font-semibold mt-2">
+                                Absent Dates and Reasons
+                              </h5>
+                              <ul>
+                                {student.attendance.absentDates.map(
+                                  (absentDate: any, index: number) => (
+                                    <li key={index}>
+                                      {new Date(
+                                        absentDate.date
+                                      ).toLocaleDateString()}
+                                      : {absentDate.reason}
+                                    </li>
+                                  )
+                                )}
+                              </ul>
+                            </>
+                          )}
+                        </div>
+                        {Object.entries(student.subjects).map(
+                          ([subject, details]: [string, any]) => (
+                            <div key={subject}>
+                              <h4 className="font-semibold mt-4">
+                                {subject} Test Details
+                              </h4>
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead>Test Name</TableHead>
+                                    <TableHead>Date</TableHead>
+                                    <TableHead>Score</TableHead>
+                                    <TableHead>Max Marks</TableHead>
                                   </TableRow>
-                                ))}
-                              </TableBody>
-                            </Table>
-                          </div>
-                        ))}
+                                </TableHeader>
+                                <TableBody>
+                                  {details.examDetails.map(
+                                    (exam: any, index: number) => (
+                                      <TableRow key={index}>
+                                        <TableCell>{exam.examName}</TableCell>
+                                        <TableCell>
+                                          {new Date(
+                                            exam.date
+                                          ).toLocaleDateString()}
+                                        </TableCell>
+                                        <TableCell>{exam.score}</TableCell>
+                                        <TableCell>{exam.maxMarks}</TableCell>
+                                      </TableRow>
+                                    )
+                                  )}
+                                </TableBody>
+                              </Table>
+                            </div>
+                          )
+                        )}
                         <div className="mt-4">
                           <PDFDownloadLink
                             document={
@@ -158,14 +315,24 @@ export default function PerformanceReportPage() {
                                 student={{
                                   name: student.name,
                                   rollNo: student.rollNo,
-                                  currentStandard: Number.parseInt(selectedStandard),
+                                  currentStandard:
+                                    Number.parseInt(selectedStandard),
                                   currentClass: selectedClass,
                                 }}
-                                academicYear={new Date().getFullYear()}
-                                subjects={Object.entries(student.subjects).map(([name, details]: [string, any]) => ({
-                                  name,
-                                  examDetails: details.examDetails,
-                                }))}
+                                subjects={Object.entries(student.subjects).map(
+                                  ([name, details]: [string, any]) => ({
+                                    name,
+                                    examDetails: details.examDetails,
+                                  })
+                                )}
+                                attendance={{
+                                  totalDays: student.attendance.totalAttendance,
+                                  presentDays:
+                                    student.attendance.presentAttendance,
+                                  absentDays:
+                                    student.attendance.absentAttendance,
+                                  absentDetails: student.attendance.absentDates,
+                                }}
                               />
                             }
                             fileName={`${student.name}_Complete_Report.pdf`}
@@ -173,7 +340,9 @@ export default function PerformanceReportPage() {
                             {/*@ts-ignore*/}
                             {({ loading }) => (
                               <Button disabled={loading}>
-                                {loading ? "Generating PDF..." : "Download Complete Report Card"}
+                                {loading
+                                  ? "Generating PDF..."
+                                  : "Download Complete Report Card"}
                               </Button>
                             )}
                           </PDFDownloadLink>
@@ -188,6 +357,5 @@ export default function PerformanceReportPage() {
         </div>
       )}
     </div>
-  )
+  );
 }
-

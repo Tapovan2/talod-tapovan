@@ -18,6 +18,8 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import { useStudents } from "@/hooks/useStudents";
 import { useMarkEntries } from "@/hooks/useMarkEntries";
 import { useMarks } from "@/hooks/useMarks";
+import { Card, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface MarkEntry {
   id: string;
@@ -88,123 +90,111 @@ export default function SubjectPage({
   }, [subjectName, selectedEntry, params.standard, students, marks]);
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-slate-950 mt-2">
       <Breadcrumbs
         items={[
           { label: "Home", href: "/" },
           { label: `Standard ${params.standard}`, href: `/standard/${params.standard}` },
-          { label: `Class ${params.class}`, href: `/standard/${params.standard}/class/${params.class}` },
           { label: subjectName, href: "#" },
         ]}
       />
-     
-     <div className="flex gap-2 items-center w-full">
-        <label
-          htmlFor="entryDropdown"
-          className="block text-sm font-medium text-gray-700 mb-2"
-        ></label>
-        <select
-          id="entryDropdown"
-          className="block w-full sm:max-w-[200px] md:max-w-[250px] px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          value={selectedEntry?.id || ""}
-          onChange={(e) => {
-            const selectedId = e.target.value;
-            const selected = markEntries.find(entry => entry.id == selectedId);
-            console.log("selectedID", selected);
-            
-            if (selected) {
-                handleSelectEntry(selected);
-            }
-          }}
-        >
-          <option value="" disabled>
-            Select an entry
-          </option>
-          {markEntries.map((entry) => (
-            <option key={entry.id} value={entry.id}>
-              {entry.name} - {new Date(entry.date).toLocaleDateString()}
-            </option>
-          ))}
-        </select>
-        <div className="ml-2">
-          <MarkEntryCard
-            standard={params.standard}
-            className={params.class}
-            subject={subjectName}
-            onCreateEntry={handleCreateEntry}
-          />
-        </div>
-      </div>
 
-      {loadingEntry && <div className="loader">Loading...</div>}
+      <Card className="bg-slate-900/50 border-slate-800">
+        <CardContent className="p-2 sm:p-4 md:p-6">
+          <div className="flex gap-4 items-center">
+            <Select
+              value={selectedEntry?.id || ""}
+              onValueChange={(value) => {
+                const selected = markEntries.find((entry) => entry.id === value)
+                if (selected) {
+                  handleSelectEntry(selected)
+                }
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-[250px] bg-slate-800 border-slate-700 ">
+                <SelectValue placeholder="Select an entry" />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-800 border-slate-700">
+                {markEntries.map((entry) => (
+                  <SelectItem key={entry.id} value={entry.id} className="hover:bg-slate-700 focus:bg-slate-700">
+                    {entry.name} - {new Date(entry.date).toLocaleDateString()}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-      {selectedEntry && (
-        <>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Roll No</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Mark ({selectedEntry.MaxMarks})</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-  {students.map((student: any) => (
-    <TableRow key={student.id}>
-      <TableCell>{student.rollNo}</TableCell>
-      <TableCell>{student.name}</TableCell>
-      <TableCell>
-        <Input
-          type="text"
-          value={marks[student.id] || ""} // Ensure it starts as an empty string
-          onChange={(e) => {
-            const value = e.target.value;
-            // Allow any input for editing
-            handleMarkChange(student.id, value);
-          }}
-          onBlur={() => {
-            const currentValue = marks[student.id] || "";
-            // Validate the value when the input loses focus
-            if (currentValue.trim() === "") {
-              handleMarkChange(student.id,""); // Set to "AB" if empty
-            } else if (parseInt(currentValue) > selectedEntry.MaxMarks) {
-              alert(`Max marks allowed is ${selectedEntry.MaxMarks}. Please enter a valid value.`);
-              handleMarkChange(student.id, ""); // Reset to "AB" if exceeds max
-            } else if ((/^\d*$/.test(currentValue) || currentValue === "AB") && 
-                       (parseInt(currentValue) <= selectedEntry.MaxMarks || currentValue === "")) {
-             
-           
-                       }
-          }}
-          min="0"
-          max={selectedEntry.MaxMarks}
-          className="w-[80px] border-2 border-gray-500 rounded-md p-2"
-        />
-      </TableCell>
-    </TableRow>
-  ))}
-            </TableBody>
-          </Table>
-          <div className="flex justify-between mt-4">
-            <Button onClick={submitMarks} disabled={loading}>
-              {loading ? "Saving..." : "Save Marks"}
-            </Button>
-            {isClient && (
-              <PDFDownloadLink
-                document={<MarkSheetPDF {...getPdfData()} />}
-                fileName={`Marks-${params.standard}-${params.class}-${subjectName}-${selectedEntry.name}.pdf`}
-              >
-                {/*@ts-expect-error*/}
-                {({ loading }) => (
-                  <Button disabled={loading}>
-                    {loading ? "Generating PDF..." : "Download PDF"}
-                  </Button>
-                )}
-              </PDFDownloadLink>
-            )}
+            <MarkEntryCard standard={params.standard} className={params.class} subject={subjectName} onCreateEntry={handleCreateEntry} />
           </div>
-        </>
-      )}
+
+          {loadingEntry && (
+            <div className="flex justify-center p-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+            </div>
+          )}
+
+          {selectedEntry && (
+            <div className="mt-6 space-y-6">
+              <div className="overflow-x-auto -mx-2 sm:mx-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-slate-700">
+                      <TableHead className="text-slate-200">Roll No</TableHead>
+                      <TableHead className="text-slate-200">Name</TableHead>
+                      <TableHead className="text-slate-200">Mark ({selectedEntry.MaxMarks})</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {students.map((student: any) => (
+                      <TableRow key={student.id} className="border-slate-800">
+                        <TableCell className="text-slate-300">{student.rollNo}</TableCell>
+                        <TableCell className="text-slate-300">{student.name}</TableCell>
+                        <TableCell>
+                          <Input
+                            type="text"
+                            value={marks[student.id] || ""}
+                            onChange={(e) => handleMarkChange(student.id, e.target.value)}
+                            onBlur={() => {
+                              const currentValue = marks[student.id] || ""
+                              if (currentValue.trim() === "") {
+                                handleMarkChange(student.id, "")
+                              } else if (Number.parseInt(currentValue) > selectedEntry.MaxMarks) {
+                                alert(`Max marks allowed is ${selectedEntry.MaxMarks}. Please enter a valid value.`)
+                                handleMarkChange(student.id, "")
+                              }
+                            }}
+                            className="w-[80px] bg-slate-800 border-slate-700 text-slate-200"
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="flex justify-between mt-6">
+               
+
+                {isClient && (
+                  <PDFDownloadLink
+                    document={<MarkSheetPDF {...getPdfData()} />}
+                    fileName={`Marks-${params.standard}-${subjectName}-${selectedEntry.name}.pdf`}
+                  >
+                    {/*@ts-ignore */}
+                    {({ loading }) => (
+                      <Button disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white">
+                        {loading ? "Generating PDF..." : "Download PDF"}
+                      </Button>
+                    )}
+                  </PDFDownloadLink>
+                )}
+                 <Button onClick={submitMarks} disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white">
+                  {loading ? "Saving..." : "Save Marks"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

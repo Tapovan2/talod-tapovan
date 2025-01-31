@@ -1,7 +1,12 @@
-import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { StandardKey, standards } from "@/Data";
+"use client"
 
+import { useState } from "react"
+import Link from "next/link"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { StandardKey, standards } from "@/Data"
+
+// This would come from a database in a real application
 interface SubjectPageProps {
   params: {
     standard: StandardKey;
@@ -32,27 +37,69 @@ export default function ClassPage({ params }: SubjectPageProps) {
           )
         )
       : subjects;
+  const [selectedOption, setSelectedOption] = useState<"marks" | "attendance" | null>(null)
 
   return (
     <div>
       <h1 className="text-3xl font-bold mb-6">
         Standard {params.standard} - Class {params.class}
       </h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredSubjects.map((subject) => (
-          <Link
-            href={`/standard/${params.standard}/class/${params.class}/subject/${subject}`}
-            key={subject}
-          >
+
+      {!selectedOption && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card className="cursor-pointer" onClick={() => setSelectedOption("marks")}>
+            <CardHeader>
+              <CardTitle>Marks</CardTitle>
+            </CardHeader>
+           
+          </Card>
+          <Card className="cursor-pointer" onClick={() => setSelectedOption("attendance")}>
+            <CardHeader>
+              <CardTitle>Attendance</CardTitle>
+            </CardHeader>
+           
+          </Card>
+        </div>
+      )}
+
+      {selectedOption === "marks" && (
+        <div>
+          <Button onClick={() => setSelectedOption(null)} className="mb-4">
+            Back
+          </Button>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredSubjects.map((subject) => (
+              <Link href={`/standard/${params.standard}/class/${params.class}/subject/${subject}`} key={subject}>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{subject}</CardTitle>
+                  </CardHeader>
+                  
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {selectedOption === "attendance" && (
+        <div>
+          <Button onClick={() => setSelectedOption(null)} className="mb-4">
+            Back
+          </Button>
+          <Link prefetch={false} href={`/standard/${params.standard}/class/${params.class}/attendance`}>
             <Card>
               <CardHeader>
-                <CardTitle className="text-center">{subject}</CardTitle>
+                <CardTitle>Mark Attendance</CardTitle>
               </CardHeader>
-            
+              <CardContent>
+                <p>Mark attendance for all students in this class</p>
+              </CardContent>
             </Card>
           </Link>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
-  );
+  )
 }
+

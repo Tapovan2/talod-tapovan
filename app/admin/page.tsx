@@ -197,6 +197,12 @@ export default function AdminPage() {
         <Link href="/admin/performance">
          <Button variant="default" >Performance</Button>
         </Link>
+        <Link href="/admin/attendance">
+         <Button variant="default" >Attendnace</Button>
+        </Link>
+        <Link href="/admin/attendance/holiday">
+         <Button variant="default" >Holiday</Button>
+        </Link>
       </form>
 
       <Dialog open={isAddStudentOpen} onOpenChange={setIsAddStudentOpen}>

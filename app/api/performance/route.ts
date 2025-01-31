@@ -1,18 +1,18 @@
-import { NextResponse } from "next/server"
-import prisma from "@/lib/prisma"
+import { NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
 import { redis } from "@/lib/redis";
 
-export const dynamic = "force-dynamic"
+export const dynamic = "force-dynamic";
 
-const date = new Date()
+const date = new Date();
 
 const formatedDate = date.toLocaleDateString("en-US", {
   day: "2-digit",
   month: "2-digit",
   year: "2-digit",
-})
+});
 
-console.log("date",formatedDate);
+console.log("date", formatedDate);
 
 interface ExamDetail {
   examName: string;
@@ -30,25 +30,26 @@ interface Subjects {
 }
 
 export async function POST(request: Request) {
-  const { standard, classParam } = await request.json()
+  const { standard, classParam } = await request.json();
 
   if (!standard || !classParam) {
-    return NextResponse.json({ error: "Standard and class are required" }, { status: 400 })
+    return NextResponse.json(
+      { error: "Standard and class are required" },
+      { status: 400 }
+    );
   }
 
-  const cacheKey = `report-${standard}-${classParam}-${formatedDate}`
+  const cacheKey = `report-${standard}-${classParam}-${formatedDate}`;
 
   const cachedData = await redis.get(cacheKey);
 
-  if(cachedData){
-  
+  if (cachedData) {
     return NextResponse.json(cachedData);
   }
 
   try {
-    const standardInt = Number.parseInt(standard)
+    const standardInt = Number.parseInt(standard);
 
-   
     const studentsWithMarks = await prisma.student.findMany({
       where: {
         currentStandard: standardInt,
@@ -56,10 +57,12 @@ export async function POST(request: Request) {
       },
       select: {
         id: true,
+
         rollNo: true,
         name: true,
         marks: {
           select: {
+            studentId: true,
             score: true,
             markEntry: {
               select: {
@@ -73,18 +76,17 @@ export async function POST(request: Request) {
         },
       },
       orderBy: { rollNo: "asc" },
-    })
+    });
 
-   
-
-   
     const reportData = studentsWithMarks.map((student) => {
-      const subjects:Subjects = {}
+      const subjects: Subjects = {};
+      const studentId = student.marks[0].studentId;
 
       student.marks.forEach((mark) => {
-        const subject = mark.markEntry.subject
+        const subject = mark.markEntry.subject;
+
         if (!subjects[subject]) {
-          subjects[subject] = { examDetails: [] }
+          subjects[subject] = { examDetails: [] };
         }
 
         subjects[subject].examDetails.push({
@@ -92,35 +94,35 @@ export async function POST(request: Request) {
           date: mark.markEntry.date,
           score: mark.score,
           maxMarks: mark.markEntry.MaxMarks,
-        })
-      })
+        });
+      });
 
       return {
+        studentId,
         rollNo: student.rollNo,
         name: student.name,
         subjects,
-      }
-    })
+      };
+    });
 
-    reportData.sort((a, b) => Number(a.rollNo) - Number(b.rollNo))
+    reportData.sort((a, b) => Number(a.rollNo) - Number(b.rollNo));
 
     const response = {
-      students:reportData,
+      students: reportData,
       standard,
-      class:classParam
-    }
+      class: classParam,
+    };
 
-    
-    
+    await redis.set(cacheKey, JSON.stringify(response));
 
-    await redis.set(cacheKey,JSON.stringify(response),{ex:86400})
-
-    return NextResponse.json(response)
+    return NextResponse.json(response);
   } catch (error) {
-    console.error("Error generating complete report:", error)
-    return NextResponse.json({ error: "Failed to generate complete report" }, { status: 500 })
-  }finally{
-    await prisma.$disconnect()
+    console.error("Error generating complete report:", error);
+    return NextResponse.json(
+      { error: "Failed to generate complete report" },
+      { status: 500 }
+    );
+  } finally {
+    await prisma.$disconnect();
   }
 }
-
