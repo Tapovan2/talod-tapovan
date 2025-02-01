@@ -22,9 +22,7 @@ export default function AttendancePage() {
   const standard = params.standard as string;
   const classParam = params.class as string;
   const subject = params.subject as string;
-  const [date, setDate] = useState<Date>(
-    new Date(new Date().setHours(0, 0, 0, 0))
-  );
+  const [date, setDate] = useState<Date | undefined>(undefined);
   const [attendance, setAttendance] = useState<{ [key: string]: string }>({});
   const { students, isLoading: isLoadingStudents } = useStudents(
     standard,
@@ -37,21 +35,21 @@ export default function AttendancePage() {
     setAttendance((prev) => ({ ...prev, [studentId]: value }));
   };
   const handleSubmitAttendance = async () => {
-    setIsSubmitting(true);
     if (!date) {
-      toast({
-        title: "Error",
-        description: "Please select a date",
-        variant: "destructive",
-      });
-      setIsSubmitting(false);
+      alert("Please select a date for attendance submission");
       return;
     }
+    setIsSubmitting(true);
     try {
       const attendanceData = students.map((student: any) => ({
         studentId: student.id,
         status: attendance[student.id] || "P", // Default to "P" if not explicitly marked
       }));
+
+      // Add one day to the selected date
+      const adjustedDate = new Date(date);
+      adjustedDate.setDate(adjustedDate.getDate() + 1);
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_API}/attendance`,
         {
@@ -60,7 +58,7 @@ export default function AttendancePage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            date: date,
+            date: adjustedDate.toISOString().split("T")[0], // Send adjusted date as YYYY-MM-DD
             standard: standard,
             class: classParam,
             attendance: attendanceData,
@@ -108,12 +106,27 @@ export default function AttendancePage() {
               mode="single"
               selected={date}
               onDayClick={(day) => {
-                const adjustedDate = new Date(
-                  day.setMinutes(day.getMinutes() - day.getTimezoneOffset())
-                );
+                const adjustedDate = new Date(day.setHours(0, 0, 0, 0));
                 setDate(adjustedDate);
               }}
               className="rounded-md border"
+              modifiers={{
+                dummy: (day) =>
+                  !date && day.toDateString() === new Date().toDateString(),
+              }}
+              modifiersStyles={{
+                dummy: {
+                  color: "lightgray",
+                  fontWeight: "normal",
+                },
+              }}
+              styles={{
+                day_selected: {
+                  backgroundColor: "blue",
+                  color: "white",
+                  fontWeight: "bold",
+                },
+              }}
             />
           </CardContent>
         </Card>
