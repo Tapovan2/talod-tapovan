@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,14 +17,13 @@ import {
 } from "@/components/ui/table";
 import { Loader2 } from "lucide-react";
 import { useStudents } from "@/hooks/useStudents";
+
 export default function AttendancePage() {
   const params = useParams();
   const standard = params.standard as string;
   const classParam = params.class as string;
   const subject = params.subject as string;
-  const [date, setDate] = useState<Date>(
-    new Date(new Date().setHours(0, 0, 0, 0))
-  );
+  const [date, setDate] = useState<Date | undefined>(undefined);
   const [attendance, setAttendance] = useState<{ [key: string]: string }>({});
   const { students, isLoading: isLoadingStudents } = useStudents(
     standard,
@@ -32,26 +31,39 @@ export default function AttendancePage() {
     subject
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSunday, setIsSunday] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (date) {
+      setIsSunday(date.getDay() === 0);
+    }
+  }, [date]);
+
   const handleAttendanceChange = (studentId: string, value: string) => {
     setAttendance((prev) => ({ ...prev, [studentId]: value }));
   };
+
   const handleSubmitAttendance = async () => {
-    setIsSubmitting(true);
     if (!date) {
-      toast({
-        title: "Error",
-        description: "Please select a date",
-        variant: "destructive",
-      });
-      setIsSubmitting(false);
+      alert("Please select a date for attendance submission");
       return;
     }
+    if (isSunday) {
+      alert("You can't submit attendance on Sunday");
+      return;
+    }
+    setIsSubmitting(true);
     try {
       const attendanceData = students.map((student: any) => ({
         studentId: student.id,
         status: attendance[student.id] || "P", // Default to "P" if not explicitly marked
       }));
+
+      // Add one day to the selected date
+      const adjustedDate = new Date(date);
+      adjustedDate.setDate(adjustedDate.getDate() + 1);
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_API}/attendance`,
         {
@@ -60,7 +72,7 @@ export default function AttendancePage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            date: date,
+            date: adjustedDate.toISOString().split("T")[0], // Send adjusted date as YYYY-MM-DD
             standard: standard,
             class: classParam,
             attendance: attendanceData,
@@ -91,6 +103,7 @@ export default function AttendancePage() {
       setIsSubmitting(false);
     }
   };
+
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -108,12 +121,25 @@ export default function AttendancePage() {
               mode="single"
               selected={date}
               onDayClick={(day) => {
-                const adjustedDate = new Date(
-                  day.setMinutes(day.getMinutes() - day.getTimezoneOffset())
-                );
+                const adjustedDate = new Date(day.setHours(0, 0, 0, 0));
                 setDate(adjustedDate);
               }}
               className="rounded-md border"
+              modifiers={{
+                dummy: (day) =>
+                  !date && day.toDateString() === new Date().toDateString(),
+              }}
+              modifiersStyles={{
+                dummy: {
+                  color: "lightgray",
+                  fontWeight: "normal",
+                },
+                selected: {
+                  backgroundColor: "blue",
+                  color: "white",
+                  fontWeight: "bold",
+                },
+              }}
             />
           </CardContent>
         </Card>
@@ -125,6 +151,12 @@ export default function AttendancePage() {
             {isLoadingStudents ? (
               <div className="flex justify-center items-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : isSunday ? (
+              <div className="flex justify-center items-center h-64">
+                <p className="text-xl font-semibold text-red-500">
+                  You can't submit attendance on Sunday
+                </p>
               </div>
             ) : (
               <Table>
@@ -187,7 +219,7 @@ export default function AttendancePage() {
       <div className="flex items-center justify-center">
         <Button
           onClick={handleSubmitAttendance}
-          disabled={isSubmitting || isLoadingStudents}
+          disabled={isSubmitting || isLoadingStudents || isSunday || !date}
         >
           {isSubmitting ? (
             <>
