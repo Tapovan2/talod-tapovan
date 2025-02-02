@@ -236,7 +236,7 @@ export default function AdminPage() {
         <Link href="/admin/performance">
           <Button variant="default">Performance</Button>
         </Link>
-        <Link href="/attendance">
+        <Link href="/admin/attendance">
           <Button variant="default">Attendnace</Button>
         </Link>
         <Link href="/attendance/holiday">

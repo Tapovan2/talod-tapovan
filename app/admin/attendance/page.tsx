@@ -39,7 +39,6 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Input } from "@/components/ui/input";
 
 type MergedAttendanceRecord = {
   id: number;
@@ -66,8 +65,6 @@ type AttendanceRecord = {
 
 const formSchema = z.object({
   status: z.enum(["P", "A"]),
-  reason: z.string(),
-  customReason: z.string().optional(),
 });
 
 export default function AttendanceViewer() {
@@ -94,7 +91,6 @@ export default function AttendanceViewer() {
   const [selectedRecord, setSelectedRecord] = useState<AttendanceRecord | null>(
     null
   );
-  const [showCustomReason, setShowCustomReason] = useState(false);
   const [updateLoading, setIsUpdateLoading] = useState(false);
 
   const months = [
@@ -215,12 +211,9 @@ export default function AttendanceViewer() {
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
-    // Moved useForm hook outside of conditional rendering
     resolver: zodResolver(formSchema),
     defaultValues: {
       status: "P" as "P" | "A",
-      reason: "",
-      customReason: "",
     },
   });
 
@@ -314,52 +307,18 @@ export default function AttendanceViewer() {
     setSelectedRecord(record);
     form.reset({
       status: record.status as "P" | "A",
-      reason:
-        record.reason &&
-        ["Lagan ma gayel chhe", "Bimar padel chhe", "bar gayel chhe"].includes(
-          record.reason
-        )
-          ? record.reason
-          : record.reason
-          ? "Other"
-          : "Please select reason",
-      customReason:
-        record.reason &&
-        !["Lagan ma gayel chhe", "Bimar padel chhe", "Bar gayel chhe"].includes(
-          record.reason
-        )
-          ? record.reason
-          : "",
     });
-    setShowCustomReason(
-      Boolean(
-        record.reason &&
-          ![
-            "Lagan ma gayel chhe",
-            "Bimar padel chhe",
-            "Bar gayel chhe",
-          ].includes(record.reason)
-      )
-    );
   };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsUpdateLoading(true);
     if (!selectedRecord) return;
 
-    const finalReason =
-      values.reason === "Other"
-        ? values.customReason
-        : values.reason === "Please select reason"
-        ? ""
-        : values.reason;
-
     const updateData = {
       standard: currentStandard,
       className: currentClass,
       id: selectedRecord.id,
       status: values.status,
-      reason: finalReason,
     };
 
     console.log("Updating attendance with data:", updateData);
@@ -577,7 +536,6 @@ export default function AttendanceViewer() {
                                         onSubmit={form.handleSubmit(onSubmit)}
                                         className="space-y-8"
                                       >
-                                        {/* Form fields remain unchanged */}
                                         <FormField
                                           control={form.control}
                                           name="status"
@@ -606,65 +564,6 @@ export default function AttendanceViewer() {
                                             </FormItem>
                                           )}
                                         />
-                                        <FormField
-                                          control={form.control}
-                                          name="reason"
-                                          render={({ field }) => (
-                                            <FormItem>
-                                              <FormLabel>Reason</FormLabel>
-                                              <Select
-                                                onValueChange={(value) => {
-                                                  field.onChange(value);
-                                                  setShowCustomReason(
-                                                    value === "Other"
-                                                  );
-                                                }}
-                                                defaultValue={field.value}
-                                              >
-                                                <FormControl>
-                                                  <SelectTrigger>
-                                                    <SelectValue placeholder="Please select reason" />
-                                                  </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                  <SelectItem value="Lagan ma gayel chhe">
-                                                    Lagan ma gayel chhe
-                                                  </SelectItem>
-                                                  <SelectItem value="Bimar padel chhe">
-                                                    Bimar padel chhe
-                                                  </SelectItem>
-                                                  <SelectItem value="Bar gayel chhe">
-                                                    Bar gayel chhe
-                                                  </SelectItem>
-                                                  <SelectItem value="Other">
-                                                    Other
-                                                  </SelectItem>
-                                                </SelectContent>
-                                              </Select>
-                                              <FormMessage />
-                                            </FormItem>
-                                          )}
-                                        />
-                                        {showCustomReason && (
-                                          <FormField
-                                            control={form.control}
-                                            name="customReason"
-                                            render={({ field }) => (
-                                              <FormItem>
-                                                <FormLabel>
-                                                  Custom Reason
-                                                </FormLabel>
-                                                <FormControl>
-                                                  <Input
-                                                    placeholder="Enter custom reason"
-                                                    {...field}
-                                                  />
-                                                </FormControl>
-                                                <FormMessage />
-                                              </FormItem>
-                                            )}
-                                          />
-                                        )}
                                         <Button
                                           className="text-white"
                                           type="submit"

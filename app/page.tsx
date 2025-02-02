@@ -9,9 +9,9 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-slate-950">
       <header className="flex justify-between items-center mb-8">
-        <Link href="/attendance" prefetch={false}>
+        <Link href="/absent" prefetch={false}>
           <Button className="bg-blue-600 hover:bg-blue-700">
-            Attendance View
+            Attendance Reason
           </Button>
         </Link>
         <div className="ml-auto">
