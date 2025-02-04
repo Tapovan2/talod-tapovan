@@ -30,7 +30,7 @@ interface Subjects {
 }
 
 export async function POST(request: Request) {
-  const { standard, classParam } = await request.json();
+  const { standard, classParam, month, year } = await request.json();
 
   if (!standard || !classParam) {
     return NextResponse.json(
@@ -39,13 +39,22 @@ export async function POST(request: Request) {
     );
   }
 
-  const cacheKey = `report-${standard}-${classParam}-${formatedDate}`;
+  const startDate = new Date(Number(year), Number(month), 1);
+  startDate.setUTCHours(0, 0, 0, 0); // Set absolute UTC midnight
 
-  const cachedData = await redis.get(cacheKey);
+  const endDate = new Date(Number(year), Number(month) + 1, 0);
+  endDate.setUTCHours(0, 0, 0, 0); // Set absolute UTC midnight
 
-  if (cachedData) {
-    return NextResponse.json(cachedData);
-  }
+  console.log("startDate", startDate);
+  console.log("endDate", endDate);
+
+  // const cacheKey = `report-${standard}-${classParam}-${formatedDate}`;
+
+  // const cachedData = await redis.get(cacheKey);
+
+  // if (cachedData) {
+  //   return NextResponse.json(cachedData);
+  // }
 
   try {
     const standardInt = Number.parseInt(standard);
@@ -55,6 +64,7 @@ export async function POST(request: Request) {
         currentStandard: standardInt,
         currentClass: classParam,
       },
+
       select: {
         id: true,
 
@@ -73,11 +83,23 @@ export async function POST(request: Request) {
               },
             },
           },
+          where: {
+            markEntry: {
+              date: {
+                gte: startDate,
+                lt: endDate,
+              },
+            },
+          },
         },
       },
+
       orderBy: { rollNo: "asc" },
     });
 
+    if (!studentsWithMarks.length) {
+      return NextResponse.json({ message: "No Data Found" }, { status: 404 });
+    }
     const reportData = studentsWithMarks.map((student) => {
       const subjects: Subjects = {};
       const studentId = student.marks[0].studentId;
@@ -113,7 +135,7 @@ export async function POST(request: Request) {
       class: classParam,
     };
 
-    await redis.set(cacheKey, JSON.stringify(response));
+    // await redis.set(cacheKey, JSON.stringify(response));
 
     return NextResponse.json(response);
   } catch (error) {
