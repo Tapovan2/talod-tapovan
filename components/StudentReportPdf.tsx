@@ -4,302 +4,339 @@ import {
   Text,
   View,
   StyleSheet,
-  Font,
+  Image,
 } from "@react-pdf/renderer";
-
-// Register fonts
 
 const styles = StyleSheet.create({
   page: {
-    padding: 35,
+    padding: 30,
     fontSize: 12,
-
     backgroundColor: "#ffffff",
   },
   header: {
-    backgroundColor: "#1e40af",
-    padding: 24,
-    marginBottom: 24,
-    borderRadius: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+    gap: 20,
+  },
+  logo: {
+    width: 80,
+    height: 90,
+  },
+  schoolInfo: {
+    flex: 1,
   },
   schoolName: {
-    color: "#ffffff",
-    fontSize: 28,
-    textAlign: "center",
+    fontSize: 24,
     fontWeight: "bold",
-    letterSpacing: 0.5,
+    textAlign: "center",
   },
-  reportTitle: {
-    color: "#ffffff",
+  subHeader: {
+    fontSize: 16,
+    textAlign: "center",
+    marginTop: 4,
+  },
+  monthlyReport: {
     fontSize: 18,
+    fontWeight: "bold",
     textAlign: "center",
     marginTop: 8,
-    opacity: 0.9,
   },
-  card: {
-    backgroundColor: "#f8fafc",
-    borderRadius: 8,
-    padding: 20,
-    marginBottom: 24,
+  divider: {
+    borderBottomWidth: 1,
+    borderColor: "#000",
+    marginVertical: 10,
+  },
+  studentInfoContainer: {
+    marginVertical: 20,
   },
   studentInfoRow: {
     flexDirection: "row",
-    marginBottom: 8,
-    alignItems: "center",
-  },
-  label: {
-    width: 120,
-    color: "#64748b",
-    fontSize: 12,
-  },
-  value: {
-    flex: 1,
-    fontSize: 14,
-    color: "#0f172a",
-    fontWeight: "bold",
-  },
-  attendanceGrid: {
-    flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 12,
-    padding: 16,
-    backgroundColor: "#ffffff",
-    borderRadius: 6,
+    marginBottom: 10,
   },
-  attendanceItem: {
-    alignItems: "center",
-  },
-  attendanceValue: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#1e40af",
-    marginBottom: 4,
-  },
-  attendanceLabel: {
-    fontSize: 11,
-    color: "#64748b",
-  },
-  sectionTitle: {
+  studentName: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#1e40af",
-    marginBottom: 12,
-    marginTop: 8,
+  },
+  studentDetail: {
+    fontSize: 14,
+    fontWeight: "bold",
   },
   table: {
-    marginTop: 12,
+    width: "100%",
+    marginTop: 10,
+  },
+  tableHeader: {
+    flexDirection: "row",
+    borderWidth: 1,
+    borderColor: "#000",
   },
   tableRow: {
     flexDirection: "row",
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
     borderBottomWidth: 1,
-    borderBottomColor: "#e2e8f0",
-    minHeight: 40,
-    alignItems: "center",
+    borderColor: "#000",
   },
-  tableHeader: {
-    backgroundColor: "#f1f5f9",
-    borderTopLeftRadius: 6,
-    borderTopRightRadius: 6,
+  subjectCell: {
+    width: "25%",
+    padding: 8,
+    borderRightWidth: 1,
+    borderColor: "#000",
+    textAlign: "center",
   },
-  tableHeaderText: {
-    color: "#475569",
-    fontSize: 11,
-    fontWeight: "bold",
-    textTransform: "uppercase",
+  marksSection: {
+    width: "45%",
   },
-  tableCell: {
-    flex: 1,
-    padding: 10,
-    fontSize: 12,
-    color: "#334155",
+  marksHeader: {
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderColor: "#000",
+    padding: 4,
+    textAlign: "center",
   },
-  subjectCard: {
-    backgroundColor: "#f8fafc",
-    borderRadius: 8,
-    padding: 20,
-    marginBottom: 16,
-  },
-  footer: {
-    position: "absolute",
-    bottom: 30,
-    left: 30,
-    right: 30,
-  },
-  signatureRow: {
+  testScores: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 30,
+  },
+  testCell: {
+    width: "33.33%",
+    padding: 8,
+    borderRightWidth: 1,
+    borderColor: "#000",
+    textAlign: "center",
+  },
+  totalCell: {
+    width: "15%",
+    padding: 8,
+    borderRightWidth: 1,
+    borderColor: "#000",
+    textAlign: "center",
+  },
+  averageCell: {
+    width: "15%",
+    padding: 8,
+    textAlign: "center",
+  },
+  boldText: {
+    fontWeight: "bold",
+  },
+  attendanceTable: {
+    width: "50%",
+    marginTop: 20,
+    alignSelf: "center",
+    borderWidth: 1,
+    borderColor: "#000",
+  },
+  attendanceRow: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderBottomColor: "#000",
+  },
+  attendanceLabel: {
+    width: "60%",
+    padding: 8,
+    borderRightWidth: 1,
+    borderRightColor: "#000",
+    textAlign: "center",
+  },
+  attendanceValue: {
+    width: "40%",
+    padding: 8,
+    textAlign: "center",
   },
   signatureSection: {
-    width: 160,
-    borderTopWidth: 1,
-    borderTopColor: "#cbd5e1",
-    paddingTop: 8,
-    alignItems: "center",
+    position: "absolute",
+    bottom: 20,
+    left: 30,
+    right: 30,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 20,
+  },
+  signatureBlock: {
+    flex: 1,
+  },
+  signatureLine: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#000",
+    marginBottom: 8,
   },
   signatureText: {
-    fontSize: 11,
-    color: "#64748b",
+    fontSize: 12,
+    color: "#666",
+    textAlign: "center",
   },
 });
+
+// Helper function to convert marks to 30 marks scale
+function convertTo30MarksScale(
+  score: number | null,
+  maxMarks: number
+): number | null {
+  if (score === null) return null;
+  return Math.round((score / maxMarks) * 30);
+}
 
 interface StudentReportProps {
   student: {
     name: string;
     rollNo: string;
     currentStandard: number;
-    currentClass: string;
   };
-  attendance: {
-    totalDays: number;
-    presentDays: number;
-    absentDays: number;
-    absentDetails: Array<{
-      date: string;
-      reason: string;
-    }>;
-  };
-
   subjects: {
     name: string;
     examDetails: Array<{
       examName: string;
-      date: string;
-      score: string;
+      score: number | null;
       maxMarks: number;
     }>;
   }[];
+  attendance: {
+    totalDays: number;
+    presentDays: number;
+  };
 }
 
 export function StudentReportPDF({
   student,
-  attendance,
   subjects,
+  attendance,
 }: StudentReportProps) {
-  const attendancePercentage = Math.round(
-    (attendance.presentDays / attendance.totalDays) * 100
-  );
+  const processedSubjects = subjects.map((subject) => {
+    const convertedScores = subject.examDetails.map((exam) =>
+      exam.score !== null
+        ? convertTo30MarksScale(exam.score, exam.maxMarks)
+        : null
+    );
+
+    const validScores = convertedScores.filter(
+      (score): score is number => score !== null
+    );
+    const total = validScores.reduce((sum, score) => sum + score, 0);
+    const average =
+      validScores.length > 0 ? (total / validScores.length).toFixed(2) : "0.00";
+
+    return {
+      name: subject.name,
+      scores: convertedScores,
+      total,
+      average,
+    };
+  });
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.schoolName}>Tapovan Vidhyamandir Sankul</Text>
-          <Text style={styles.reportTitle}>Progress Report</Text>
+          <Image src="/logo.png" style={styles.logo} />
+          <View style={styles.schoolInfo}>
+            <Text style={styles.schoolName}>TAPOVAN VIDHYAMANDIR SANKUL</Text>
+            <Text style={styles.subHeader}>(SAPTESHVAR VIDHYALAY)</Text>
+            <Text style={styles.monthlyReport}>MONTHLY REPORT - SEP</Text>
+          </View>
         </View>
 
-        {/* Student Information Card */}
-        <View style={styles.card}>
+        <View style={styles.divider} />
+
+        <View style={styles.studentInfoContainer}>
           <View style={styles.studentInfoRow}>
-            <Text style={styles.label}>Student Name</Text>
-            <Text style={styles.value}>{student.name}</Text>
+            <Text style={styles.studentName}>NAME : {student.name}</Text>
           </View>
           <View style={styles.studentInfoRow}>
-            <Text style={styles.label}>Roll Number</Text>
-            <Text style={styles.value}>{student.rollNo}</Text>
-          </View>
-          <View style={styles.studentInfoRow}>
-            <Text style={styles.label}>Class</Text>
-            <Text style={styles.value}>
-              Standard {student.currentStandard} - {student.currentClass}
+            <Text style={styles.studentDetail}>
+              STD : {student.currentStandard}
             </Text>
+            <Text style={styles.studentDetail}>ROLL NO : {student.rollNo}</Text>
           </View>
         </View>
 
-        {/* Attendance Card */}
-        <View style={styles.card}>
-          <Text style={[styles.label, { marginBottom: 8 }]}>
-            ATTENDANCE OVERVIEW
-          </Text>
-          <View style={styles.attendanceGrid}>
-            <View style={styles.attendanceItem}>
-              <Text style={styles.attendanceValue}>
-                {attendancePercentage}%
-              </Text>
-              <Text style={styles.attendanceLabel}>Attendance Rate</Text>
+        <View style={styles.table}>
+          <View style={styles.tableHeader}>
+            <View style={styles.subjectCell}>
+              <Text style={styles.boldText}>SUBJECT</Text>
             </View>
-            <View style={styles.attendanceItem}>
-              <Text style={styles.attendanceValue}>
-                {attendance.presentDays}/{attendance.totalDays}
-              </Text>
-              <Text style={styles.attendanceLabel}>Days Present</Text>
+            <View style={styles.marksSection}>
+              <View style={styles.marksHeader}>
+                <Text style={styles.boldText}>MARKS - 30</Text>
+              </View>
+              <View style={styles.testScores}>
+                <View style={styles.testCell}>
+                  <Text style={styles.boldText}>TEST - 1</Text>
+                </View>
+                <View style={styles.testCell}>
+                  <Text style={styles.boldText}>TEST - 2</Text>
+                </View>
+                <View style={styles.testCell}>
+                  <Text style={styles.boldText}>TEST - 3</Text>
+                </View>
+              </View>
             </View>
-            <View style={styles.attendanceItem}>
-              <Text style={styles.attendanceValue}>
-                {attendance.absentDays}
-              </Text>
-              <Text style={styles.attendanceLabel}>Days Absent</Text>
+            <View style={styles.totalCell}>
+              <Text style={styles.boldText}>TOTAL</Text>
+              <Text style={styles.boldText}>(90)</Text>
+            </View>
+            <View style={styles.averageCell}>
+              <Text style={styles.boldText}>AVERAGE</Text>
+              <Text style={styles.boldText}>(30)</Text>
             </View>
           </View>
 
-          {attendance.absentDetails.length > 0 && (
-            <View style={styles.table}>
-              <View style={[styles.tableRow, styles.tableHeader]}>
-                <Text style={[styles.tableCell, styles.tableHeaderText]}>
-                  Date
-                </Text>
-                <Text style={[styles.tableCell, styles.tableHeaderText]}>
-                  Reason
-                </Text>
+          {processedSubjects.map((subject, index) => (
+            <View key={index} style={styles.tableRow}>
+              <View style={styles.subjectCell}>
+                <Text style={styles.boldText}>{subject.name}</Text>
               </View>
-              {attendance.absentDetails.map((absent, index) => (
-                <View key={index} style={styles.tableRow}>
-                  <Text style={styles.tableCell}>
-                    {new Date(absent.date).toLocaleDateString()}
-                  </Text>
-                  <Text style={styles.tableCell}>{absent.reason}</Text>
+              <View style={styles.marksSection}>
+                <View style={styles.testScores}>
+                  {subject.scores.map((score, idx) => (
+                    <View key={idx} style={styles.testCell}>
+                      <Text>{score ?? ""}</Text>
+                    </View>
+                  ))}
                 </View>
-              ))}
+              </View>
+              <View style={styles.totalCell}>
+                <Text>{subject.total}</Text>
+              </View>
+              <View style={styles.averageCell}>
+                <Text>{subject.average}</Text>
+              </View>
             </View>
-          )}
+          ))}
         </View>
 
-        {/* Subject Details */}
-        {subjects.map((subject, index) => (
-          <View key={index} style={styles.subjectCard} wrap={false}>
-            <Text style={styles.sectionTitle}>{subject.name} Performance</Text>
-            <View style={styles.table}>
-              <View style={[styles.tableRow, styles.tableHeader]}>
-                <Text style={[styles.tableCell, styles.tableHeaderText]}>
-                  Test Name
-                </Text>
-                <Text style={[styles.tableCell, styles.tableHeaderText]}>
-                  Date
-                </Text>
-                <Text style={[styles.tableCell, styles.tableHeaderText]}>
-                  Score
-                </Text>
-                <Text style={[styles.tableCell, styles.tableHeaderText]}>
-                  Max Marks
-                </Text>
-              </View>
-              {subject.examDetails.map((exam, examIndex) => (
-                <View key={examIndex} style={styles.tableRow}>
-                  <Text style={styles.tableCell}>{exam.examName}</Text>
-                  <Text style={styles.tableCell}>
-                    {new Date(exam.date).toLocaleDateString()}
-                  </Text>
-                  <Text style={styles.tableCell}>{exam.score}</Text>
-                  <Text style={styles.tableCell}>{exam.maxMarks}</Text>
-                </View>
-              ))}
+        <View style={styles.attendanceTable}>
+          <View style={styles.attendanceRow}>
+            <View style={styles.attendanceLabel}>
+              <Text>TOTAL DAYS</Text>
+            </View>
+            <View style={styles.attendanceValue}>
+              <Text>{attendance.totalDays}</Text>
             </View>
           </View>
-        ))}
+          <View style={[styles.attendanceRow, { borderBottomWidth: 0 }]}>
+            <View style={styles.attendanceLabel}>
+              <Text>PRESENT</Text>
+            </View>
+            <View style={styles.attendanceValue}>
+              <Text>{attendance.presentDays}</Text>
+            </View>
+          </View>
+        </View>
 
-        {/* Footer with Signatures */}
-        <View style={styles.footer}>
-          <View style={styles.signatureRow}>
-            <View style={styles.signatureSection}>
-              <Text style={styles.signatureText}>Class Teacher</Text>
-            </View>
-            <View style={styles.signatureSection}>
-              <Text style={styles.signatureText}>Principal</Text>
-            </View>
-            <View style={styles.signatureSection}>
-              <Text style={styles.signatureText}>Parent/Guardian</Text>
-            </View>
+        <View style={styles.signatureSection}>
+          <View style={styles.signatureBlock}>
+            <View style={styles.signatureLine} />
+            <Text style={styles.signatureText}>Class Teacher</Text>
+          </View>
+          <View style={styles.signatureBlock}>
+            <View style={styles.signatureLine} />
+            <Text style={styles.signatureText}>Parent Sign 1</Text>
+          </View>
+          <View style={styles.signatureBlock}>
+            <View style={styles.signatureLine} />
+            <Text style={styles.signatureText}>Parent Sign 2</Text>
           </View>
         </View>
       </Page>

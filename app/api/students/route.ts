@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
-
 export async function GET(request: Request) {
-  
   const { searchParams } = new URL(request.url);
   const standard = searchParams.get("standard");
   const classParam = searchParams.get("class");
@@ -17,16 +15,17 @@ export async function GET(request: Request) {
   //   return NextResponse.json(cachedData)
   // }
 
- 
-  
-
   let students;
 
-  if ((subject === "Chemistry" || subject === "Physics") && (standard === "11" || standard === "12")) {
+  if (
+    (subject === "Chemistry" ||
+      subject === "Physics" ||
+      subject === "English") &&
+    (standard === "11" || standard === "12")
+  ) {
     students = await prisma.student.findMany({
       where: {
         currentStandard: standard ? parseInt(standard) : undefined,
-        
       },
     });
   } else {
@@ -48,8 +47,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const data = await request.json();
-  
-  
+
   const student = await prisma.student.create({
     data: {
       name: data.name,

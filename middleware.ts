@@ -1,15 +1,15 @@
 import { cookies } from "next/headers";
-import {get} from "@vercel/edge-config"
+import { get } from "@vercel/edge-config";
 
 import { NextRequest, NextResponse } from "next/server";
 
 export async function middleware(req: NextRequest) {
-     const path = req.nextUrl.pathname;
-     const isInMaintenanceMode = await get("maintenanceMode");
+  const path = req.nextUrl.pathname;
+  //  const isInMaintenanceMode = await get("maintenanceMode");
 
-     if (isInMaintenanceMode === "true") {
-       return NextResponse.redirect("https://tmaintainance.vercel.app")
-     }
+  //  if (isInMaintenanceMode === "true") {
+  //    return NextResponse.redirect("https://tmaintainance.vercel.app")
+  //  }
   const cookieStore = cookies();
   const adminAuthenticated = cookieStore.get("adminAuthenticated");
 
@@ -33,4 +33,3 @@ export async function middleware(req: NextRequest) {
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
-

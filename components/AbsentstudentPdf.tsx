@@ -5,7 +5,7 @@ import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
   page: {
-    padding: 30,
+    padding: 25,
   },
   title: {
     fontSize: 18,
@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
   },
   tableColClass: {
-    width: "10%",
+    width: "15%",
     borderStyle: "solid",
     borderWidth: 1,
     borderLeftWidth: 0,
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
   },
   tableColReason: {
     textAlign: "center",
-    width: "20%",
+    width: "25%",
     borderStyle: "solid",
     borderWidth: 1,
     borderLeftWidth: 0,
@@ -97,8 +97,8 @@ const styles = StyleSheet.create({
 
 interface AbsentStudentsPDFProps {
   absentStudents: any;
-  month: string;
-  year: string;
+  startDate: string;
+  endDate: string;
 }
 
 const formatDate = (dateString: string) => {
@@ -143,9 +143,9 @@ const chunkArray = (array: any[], size: number) => {
 };
 
 const AbsentStudentsPDFDocument: React.FC<AbsentStudentsPDFProps> = ({
+  endDate,
+  startDate,
   absentStudents,
-  month,
-  year,
 }) => {
   // Split data into chunks of 20 items per page
   const itemsPerPage = 30;
@@ -156,7 +156,7 @@ const AbsentStudentsPDFDocument: React.FC<AbsentStudentsPDFProps> = ({
       {chunkedData.map((pageData, pageIndex) => (
         <Page size="A4" style={styles.page} key={pageIndex}>
           <Text style={styles.title}>
-            Absent Students Report - {month} {year}
+            Absent Students Report 
           </Text>
           <View style={styles.table}>
             <TableHeader />

@@ -35,7 +35,12 @@ export default function PerformanceReportPage() {
   const [reportData, setReportData] = useState<any>();
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-
+  const [selectedMonth, setSelectedMonth] = useState(
+    new Date().getMonth().toString()
+  );
+  const [selectedYear, setSelectedYear] = useState(
+    new Date().getFullYear().toString()
+  );
   const handleStandardChange = (value: string) => {
     setSelectedStandard(value);
     setSelectedClass("");
@@ -46,11 +51,34 @@ export default function PerformanceReportPage() {
     ? standards[selectedStandard as keyof typeof standards]?.classes || []
     : [];
 
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  const years = Array.from({ length: 5 }, (_, i) =>
+    (new Date().getFullYear() - 2 + i).toString()
+  );
+
   const generateReport = async () => {
-    if (!selectedStandard || !selectedClass) {
+    if (
+      !selectedStandard ||
+      !selectedClass ||
+      !selectedMonth ||
+      !selectedYear
+    ) {
       toast({
         title: "Error",
-        description: "Please select standard and class.",
+        description: "Please select standard, class, month, and year.",
         variant: "destructive",
       });
       return;
@@ -65,12 +93,12 @@ export default function PerformanceReportPage() {
           body: JSON.stringify({
             standard: selectedStandard,
             classParam: selectedClass,
+            month: selectedMonth,
+            year: selectedYear,
           }),
         }),
         fetch(
-          `${
-            process.env.NEXT_PUBLIC_BACKEND_API
-          }/pattendance?standard=${selectedStandard}&class=${selectedClass}&month=${new Date().getMonth()}&year=${new Date().getFullYear()}`
+          `${process.env.NEXT_PUBLIC_BACKEND_API}/pattendance?standard=${selectedStandard}&class=${selectedClass}&month=${selectedMonth}&year=${selectedYear}`
         ),
       ]);
 
@@ -178,6 +206,30 @@ export default function PerformanceReportPage() {
             {CLASSES.map((className) => (
               <SelectItem key={className} value={className}>
                 Class {className}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Select Month" />
+          </SelectTrigger>
+          <SelectContent>
+            {months.map((month, index) => (
+              <SelectItem key={month} value={index.toString()}>
+                {month}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={selectedYear} onValueChange={setSelectedYear}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Select Year" />
+          </SelectTrigger>
+          <SelectContent>
+            {years.map((year) => (
+              <SelectItem key={year} value={year}>
+                {year}
               </SelectItem>
             ))}
           </SelectContent>
@@ -317,7 +369,7 @@ export default function PerformanceReportPage() {
                                   rollNo: student.rollNo,
                                   currentStandard:
                                     Number.parseInt(selectedStandard),
-                                  currentClass: selectedClass,
+                                  // currentClass: selectedClass,
                                 }}
                                 subjects={Object.entries(student.subjects).map(
                                   ([name, details]: [string, any]) => ({
@@ -329,9 +381,9 @@ export default function PerformanceReportPage() {
                                   totalDays: student.attendance.totalAttendance,
                                   presentDays:
                                     student.attendance.presentAttendance,
-                                  absentDays:
-                                    student.attendance.absentAttendance,
-                                  absentDetails: student.attendance.absentDates,
+                                  // absentDays:
+                                  //   student.attendance.absentAttendance,
+                                  // absentDetails: student.attendance.absentDates,
                                 }}
                               />
                             }

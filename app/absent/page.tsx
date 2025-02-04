@@ -12,13 +12,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -30,6 +23,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import AbsentStudentsPDF from "@/components/AbsentstudentPdf";
+import { DatePicker } from "@/components/ui/date-picker";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type AbsentStudent = {
   id: number;
@@ -42,40 +43,34 @@ type AbsentStudent = {
 };
 
 export default function AbsentStudentReason() {
-  const [selectedMonth, setSelectedMonth] = useState(
-    new Date().getMonth().toString()
-  );
-  const [selectedYear, setSelectedYear] = useState(
-    new Date().getFullYear().toString()
-  );
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [absentStudents, setAbsentStudents] = useState<AbsentStudent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-  const years = Array.from({ length: 5 }, (_, i) =>
-    (new Date().getFullYear() - 2 + i).toString()
-  );
-
   const fetchAbsentStudents = async () => {
+    if (!startDate || !endDate) {
+      setError("Please select both start and end dates");
+      return;
+    }
+    const adjustedStartDate = new Date(startDate);
+    const adjustedEndDate = new Date(endDate);
+
+    adjustedStartDate.setDate(adjustedStartDate.getDate() + 1);
+    adjustedEndDate.setDate(adjustedEndDate.getDate() + 1);
+
+    adjustedStartDate.setHours(0, 0, 0, 0);
+    adjustedEndDate.setHours(0, 0, 0, 0);
+
+    const startTimestamp = adjustedStartDate.getTime();
+    const endTimestamp = adjustedEndDate.getTime();
+
     setIsLoading(true);
     setError(null);
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API}/absent-students?month=${selectedMonth}&year=${selectedYear}`
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/absent-students?startDate=${startTimestamp}&endDate=${endTimestamp}`
       );
       if (!response.ok) {
         throw new Error("Failed to fetch absent students data");
@@ -112,14 +107,10 @@ export default function AbsentStudentReason() {
       setError("Failed to update reason. Please try again.");
     }
   };
-
+  // date-month-year like format
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    const day = String(date.getUTCDate()).padStart(2, "0");
-    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-    const year = date.getUTCFullYear();
-
-    return `${day}-${month}-${year}`;
+    return `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
   };
 
   return (
@@ -129,37 +120,25 @@ export default function AbsentStudentReason() {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select Month" />
-              </SelectTrigger>
-              <SelectContent>
-                {months.map((month, index) => (
-                  <SelectItem key={month} value={index.toString()}>
-                    {month}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={selectedYear} onValueChange={setSelectedYear}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select Year" />
-              </SelectTrigger>
-              <SelectContent>
-                {years.map((year) => (
-                  <SelectItem key={year} value={year}>
-                    {year}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="startDate" className="mb-2 block">
+                Start Date
+              </Label>
+              <DatePicker date={startDate} setDate={setStartDate} />
+            </div>
+            <div>
+              <Label htmlFor="endDate" className="mb-2 block">
+                End Date
+              </Label>
+              <DatePicker date={endDate} setDate={setEndDate} />
+            </div>
           </div>
 
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Button
               onClick={fetchAbsentStudents}
-              disabled={isLoading}
+              disabled={isLoading || !startDate || !endDate}
               className="min-w-[200px]"
             >
               {isLoading ? (
@@ -196,16 +175,14 @@ export default function AbsentStudentReason() {
                 document={
                   <AbsentStudentsPDF
                     absentStudents={absentStudents}
-                    month={months[Number.parseInt(selectedMonth)]}
-                    year={selectedYear}
+                    startDate={startDate?.toISOString() || ""}
+                    endDate={endDate?.toISOString() || ""}
                   />
                 }
-                fileName={`absent_students_report_${
-                  months[Number.parseInt(selectedMonth)]
-                }_${selectedYear}.pdf`}
+                fileName={`absent_students_report.pdf`}
               >
-                {/* @ts-ignore */}
-                {({ blob, url, loading, error }) => (
+                {/*@ts-ignore */}
+                {({ loading }) => (
                   <Button disabled={loading} className="min-w-[200px]">
                     {loading ? "Generating PDF..." : "Download PDF"}
                   </Button>
@@ -279,8 +256,8 @@ export default function AbsentStudentReason() {
 
           {!isLoading && absentStudents.length === 0 && (
             <div className="text-center text-muted-foreground">
-              No absent students found. Please select a different month/year or
-              click the button to fetch data.
+              No absent students found. Please select a date range and click the
+              button to fetch data.
             </div>
           )}
         </div>
