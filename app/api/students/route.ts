@@ -7,14 +7,6 @@ export async function GET(request: Request) {
   const classParam = searchParams.get("class");
   const subject = searchParams.get("subject");
 
-  // const cacheKey = `student-${standard}-${classParam}`;
-
-  // const cachedData = await redis.get(cacheKey);
-
-  // if(cachedData){
-  //   return NextResponse.json(cachedData)
-  // }
-
   let students;
 
   if (
@@ -26,6 +18,10 @@ export async function GET(request: Request) {
     students = await prisma.student.findMany({
       where: {
         currentStandard: standard ? parseInt(standard) : undefined,
+        ...(classParam &&
+        ["Jee", "Neet", "Eng-Jee", "Eng-Neet"].includes(classParam)
+          ? { currentClass: classParam }
+          : {}),
       },
     });
   } else {
@@ -39,8 +35,6 @@ export async function GET(request: Request) {
 
   //@ts-expect-error
   const sortedStudents = students.sort((a, b) => a.rollNo - b.rollNo);
-
-  // await redis.set(cacheKey, JSON.stringify(sortedStudents), { ex: 21600 });
 
   return NextResponse.json(sortedStudents);
 }
