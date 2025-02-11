@@ -26,6 +26,18 @@ export default async function ClassPage({ params }: ClassPageProps) {
       ? subjects.filter((subject) =>
           ["Biology", "Sanskrit"].includes(subject.trim())
         )
+      : ((standard === "11" || standard === "12") && cls === "Jee") ||
+        cls === "Eng-Jee"
+      ? subjects.filter(
+          (subject) =>
+            subject.trim() !== "Sanskrit" && subject.trim() !== "Biology"
+        ) // Exclude Sanskrit for JEE
+      : ((standard === "11" || standard === "12") && cls === "Neet ") ||
+        cls === "Eng-Neet"
+      ? subjects.filter(
+          (subject) =>
+            subject.trim() !== "Computer" && subject.trim() !== "Maths"
+        ) // Exclude Computer for NEET
       : subjects;
 
   return (
