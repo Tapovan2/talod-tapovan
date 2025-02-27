@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import {
   Select,
   SelectContent,
@@ -26,8 +27,11 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { standards } from "@/Data";
-import { PDFDownloadLink } from "@react-pdf/renderer";
+import { PDFLoadingButton } from "@/components/PDFLoadingButton";
 import { StudentReportPDF } from "@/components/StudentReportPdf";
+import { CombinedStudentReportPDF } from "@/components/CombinedStudentReportPDF";
+
+// Dynamically import PDF components with no SSR to prevent them from loading until needed
 
 export default function PerformanceReportPage() {
   const [selectedStandard, setSelectedStandard] = useState<string>("");
@@ -41,6 +45,7 @@ export default function PerformanceReportPage() {
   const [selectedYear, setSelectedYear] = useState(
     new Date().getFullYear().toString()
   );
+
   const handleStandardChange = (value: string) => {
     setSelectedStandard(value);
     setSelectedClass("");
@@ -109,9 +114,6 @@ export default function PerformanceReportPage() {
       const performanceData = await performanceResponse.json();
       const attendanceData = await attendanceResponse.json();
 
-      console.log("Performance Data:", performanceData);
-      console.log("Attendance Data:", attendanceData);
-
       // Process attendance data
       const processedAttendanceData = attendanceData.reduce(
         (acc: any, curr: any) => {
@@ -138,8 +140,6 @@ export default function PerformanceReportPage() {
         {}
       );
 
-      console.log("Processed Attendance Data:", processedAttendanceData);
-
       // Merge performance and attendance data
       const mergedData = {
         ...performanceData,
@@ -161,8 +161,6 @@ export default function PerformanceReportPage() {
           };
         }),
       };
-
-      console.log("Merged Data:", JSON.stringify(mergedData, null, 2));
 
       setReportData(mergedData);
       toast({
@@ -361,15 +359,16 @@ export default function PerformanceReportPage() {
                           )
                         )}
                         <div className="mt-4">
-                          <PDFDownloadLink
+                          <PDFLoadingButton
                             document={
                               <StudentReportPDF
+                                month={months[Number.parseInt(selectedMonth)]}
+                                year={selectedYear}
                                 student={{
                                   name: student.name,
                                   rollNo: student.rollNo,
                                   currentStandard:
                                     Number.parseInt(selectedStandard),
-                                  // currentClass: selectedClass,
                                 }}
                                 subjects={Object.entries(student.subjects).map(
                                   ([name, details]: [string, any]) => ({
@@ -381,23 +380,13 @@ export default function PerformanceReportPage() {
                                   totalDays: student.attendance.totalAttendance,
                                   presentDays:
                                     student.attendance.presentAttendance,
-                                  // absentDays:
-                                  //   student.attendance.absentAttendance,
-                                  // absentDetails: student.attendance.absentDates,
                                 }}
                               />
                             }
                             fileName={`${student.name}_Complete_Report.pdf`}
-                          >
-                            {/*@ts-ignore*/}
-                            {({ loading }) => (
-                              <Button disabled={loading}>
-                                {loading
-                                  ? "Generating PDF..."
-                                  : "Download Complete Report Card"}
-                              </Button>
-                            )}
-                          </PDFDownloadLink>
+                            buttonText="Download Complete Report Card"
+                            loadingText="Generating PDF..."
+                          />
                         </div>
                       </div>
                     </AccordionContent>
@@ -406,6 +395,39 @@ export default function PerformanceReportPage() {
               </Accordion>
             </CardContent>
           </Card>
+          {reportData && (
+            <div className="mt-4">
+              <PDFLoadingButton
+                document={
+                  <CombinedStudentReportPDF
+                    month={months[Number.parseInt(selectedMonth)]}
+                    year={selectedYear}
+                    standard={selectedStandard}
+                    className={selectedClass}
+                    students={reportData.students.map((student: any) => ({
+                      name: student.name,
+                      rollNo: student.rollNo,
+                      currentStandard: Number.parseInt(selectedStandard),
+                      subjects: Object.entries(student.subjects).map(
+                        ([name, details]: [string, any]) => ({
+                          name,
+                          examDetails: details.examDetails,
+                        })
+                      ),
+                      attendance: {
+                        totalDays: student.attendance.totalAttendance,
+                        presentDays: student.attendance.presentAttendance,
+                      },
+                    }))}
+                  />
+                }
+                fileName={`Standard_${selectedStandard}_Class_${selectedClass}_Complete_Report.pdf`}
+                buttonText="Download All Student Reports in Single PDF"
+                loadingText="Generating Combined PDF..."
+                className="w-full"
+              />
+            </div>
+          )}
         </div>
       )}
     </div>
