@@ -90,7 +90,7 @@ export default function SubjectPage({
   }, []);
 
   const getPdfData = useCallback(() => {
-    console.log("data", selectedEntry);
+    
 
     return {
       subject: subjectName.toUpperCase(),
