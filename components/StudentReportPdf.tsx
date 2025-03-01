@@ -170,12 +170,21 @@ const styles = StyleSheet.create({
 });
 
 // Helper function to convert marks to 30 marks scale
+// Helper function to convert marks to 30 marks scale
 function convertTo30MarksScale(
   score: number | null | string,
   maxMarks: number
-): number | null | string {
-  if (score === null) return null;
-  if (typeof score === "string") return score;
+): number | string {
+  
+
+  if (score === null || score === "AB" || score === "ab") return "AB"; // Handle absent case
+  if (typeof score === "string") {
+    const parsedScore = parseFloat(score); // Convert string to number
+   
+    if (isNaN(parsedScore)) return score; // If still NaN, return original string
+    score = parsedScore;
+    
+  }
   return Math.round((score / maxMarks) * 30);
 }
 
@@ -209,12 +218,9 @@ export function StudentReportPDF({
   attendance,
 }: StudentReportProps) {
   const processedSubjects = subjects.map((subject) => {
-    console.log(`Processing: ${subject.name}`);
+   
 
     const convertedScores = subject.examDetails.map((exam) => {
-      if (exam.score === null || exam.score === "AB") return "AB";
-      if (typeof exam.score === "string") return exam.score;
-
       return convertTo30MarksScale(exam.score, exam.maxMarks);
     });
 

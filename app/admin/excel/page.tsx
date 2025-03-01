@@ -58,8 +58,7 @@ export default function MarkEntriesPage() {
   };
 
   const fetchMarkEntries = async (standard: string, className: string) => {
-    console.log("className", className);
-
+    
     setfLoading(true);
 
     const response = await fetch(
@@ -148,7 +147,7 @@ export default function MarkEntriesPage() {
       return;
     }
 
-    console.log("Selected Entries:", selectedEntries);
+   
 
     if (confirm("Are you sure you want to delete the selected entries?")) {
       try {

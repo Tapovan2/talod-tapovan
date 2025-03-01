@@ -303,7 +303,7 @@ export default function AttendanceViewer() {
   };
 
   const handleOpenEditDialog = (record: AttendanceRecord) => {
-    console.log("Editing attendance record:", record);
+   
     setSelectedRecord(record);
     form.reset({
       status: record.status as "P" | "A",
@@ -321,7 +321,7 @@ export default function AttendanceViewer() {
       status: values.status,
     };
 
-    console.log("Updating attendance with data:", updateData);
+    
 
     try {
       const response = await fetch(

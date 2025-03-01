@@ -12,8 +12,6 @@ const formatedDate = date.toLocaleDateString("en-US", {
   year: "2-digit",
 });
 
-console.log("date", formatedDate);
-
 interface ExamDetail {
   examName: string;
   date: Date;
