@@ -35,6 +35,7 @@ export default function AdminPage() {
   const [students, setStudents] = useState<any[]>([]);
   const [editingStudent, setEditingStudent] = useState<any>(null);
   const [selectedStudents, setSelectedStudents] = useState<number[]>([]);
+  const [subClass, setSubClass] = useState<string>("");
 
   const [selectedStandard, setSelectedStandard] = useState<string>("");
   const [selectedClass, setSelectedClass] = useState<string>("");
@@ -50,11 +51,18 @@ export default function AdminPage() {
     : [];
 
   const fetchStudents = async () => {
-    if (selectedStandard && selectedClass) {
+    if (
+      selectedStandard &&
+      (selectedStandard === "11" || selectedStandard === "12"
+        ? selectedClass
+        : true)
+    ) {
       setIsLoading(true);
       try {
         const response = await fetch(
-          `/api/students?standard=${selectedStandard}&class=${selectedClass}`
+          `/api/students?standard=${selectedStandard}${
+            selectedClass ? `&class=${selectedClass}` : ""
+          }${subClass ? `&subClass=${subClass}` : ""}`
         );
         const data = await response.json();
         setStudents(data);
@@ -68,12 +76,19 @@ export default function AdminPage() {
 
   const handleStandardChange = (value: string) => {
     setSelectedStandard(value);
-    setSelectedClass("");
+    if (value !== "11" && value !== "12") {
+      setSelectedClass("");
+      setSubClass("");
+    }
     setStudents([]);
   };
 
   const handleClassChange = (value: string) => {
     setSelectedClass(value);
+  };
+
+  const handleSubClassChange = (value: string) => {
+    setSubClass(value);
   };
 
   const handleEdit = (student: any) => {
@@ -88,8 +103,6 @@ export default function AdminPage() {
       setDeletingId(null);
     }
   };
-
-  const selectedDelete = async () => {};
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -186,19 +199,47 @@ export default function AdminPage() {
             ))}
           </SelectContent>
         </Select>
-        <Select onValueChange={handleClassChange} disabled={!selectedStandard}>
-          <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="Select Class" />
-          </SelectTrigger>
-          <SelectContent>
-            {CLASSES.map((className) => (
-              <SelectItem key={className} value={className}>
-                Class {className}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button type="submit" disabled={isLoading}>
+        {(selectedStandard === "11" || selectedStandard === "12") && (
+          <Select
+            onValueChange={handleClassChange}
+            disabled={!selectedStandard}
+          >
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Select Class" />
+            </SelectTrigger>
+            <SelectContent>
+              {CLASSES.map((className) => (
+                <SelectItem key={className} value={className}>
+                  Class {className}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+        {(selectedStandard === "11" || selectedStandard === "12") && (
+          <Select
+            onValueChange={handleSubClassChange}
+            disabled={!selectedClass}
+          >
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Select Sub Class" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Maths">Maths</SelectItem>
+              <SelectItem value="Biology">Biology</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
+        <Button
+          type="submit"
+          disabled={
+            isLoading ||
+            !selectedStandard ||
+            (selectedStandard === "11" || selectedStandard === "12"
+              ? !selectedClass || !subClass
+              : false)
+          }
+        >
           {isLoading ? (
             <>
               <svg
@@ -270,6 +311,10 @@ export default function AdminPage() {
             <div>
               <Label htmlFor="class">Class</Label>
               <Input id="class" name="class" value={selectedClass} readOnly />
+            </div>
+            <div>
+              <Label htmlFor="subClass">Sub Class</Label>
+              <Input id="subClass" name="subClass" value={subClass} readOnly />
             </div>
             <Button type="submit" disabled={isAddingStudent}>
               {isAddingStudent ? (

@@ -59,8 +59,8 @@ export async function POST(request: Request) {
 
     const studentsWithMarks = await prisma.student.findMany({
       where: {
-        currentStandard: standardInt,
-        currentClass: classParam,
+        Standard: standardInt,
+        Class: classParam,
       },
 
       select: {

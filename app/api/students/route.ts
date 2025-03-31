@@ -7,28 +7,49 @@ export async function GET(request: Request) {
   const classParam = searchParams.get("class");
   const subject = searchParams.get("subject");
 
+  console.log(standard, classParam, subject);
+
   let students;
 
-  if (
-    (subject === "Chemistry" ||
+  if (standard === "11" || standard === "12") {
+    if (subject === "Maths" || subject === "Computer") {
+      students = await prisma.student.findMany({
+        where: {
+          Standard: standard ? parseInt(standard) : undefined,
+          subClass: "Maths",
+        },
+      });
+    } else if (subject === "Biology" || subject === "Sanskrit") {
+      students = await prisma.student.findMany({
+        where: {
+          Standard: standard ? parseInt(standard) : undefined,
+          subClass: "Biology",
+        },
+      });
+    } else if (
+      subject === "Chemistry" ||
       subject === "Physics" ||
-      subject === "English") &&
-    (standard === "11" || standard === "12")
-  ) {
-    students = await prisma.student.findMany({
-      where: {
-        currentStandard: standard ? parseInt(standard) : undefined,
-        ...(classParam &&
-        ["Jee", "Neet", "Eng-Jee", "Eng-Neet"].includes(classParam)
-          ? { currentClass: classParam }
-          : {}),
-      },
-    });
+      subject === "English"
+    ) {
+      students = await prisma.student.findMany({
+        where: {
+          Standard: standard ? parseInt(standard) : undefined,
+          Class: classParam || undefined,
+        },
+      });
+    } else {
+      students = await prisma.student.findMany({
+        where: {
+          Standard: standard ? parseInt(standard) : undefined,
+          Class: classParam || undefined,
+        },
+      });
+    }
   } else {
     students = await prisma.student.findMany({
       where: {
-        currentStandard: standard ? parseInt(standard) : undefined,
-        currentClass: classParam || undefined,
+        Standard: standard ? parseInt(standard) : undefined,
+        Class: classParam || undefined,
       },
     });
   }
@@ -46,8 +67,9 @@ export async function POST(request: Request) {
     data: {
       name: data.name,
       rollNo: data.rollNo,
-      currentStandard: parseInt(data.standard),
-      currentClass: data.class,
+      Standard: parseInt(data.standard),
+      Class: data.class,
+      subClass: data.subClass,
       academicHistory: {
         create: {
           year: new Date().getFullYear(),

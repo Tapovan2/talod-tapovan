@@ -108,8 +108,9 @@ model Student {
   id              Int               @id @default(autoincrement())
   name            String
   rollNo          String            
-  currentStandard Int          
-  currentClass    String
+  Standard Int          
+  Class    String
+  subClass      String?
   academicHistory AcademicHistory[]
   marks           Mark[]
  

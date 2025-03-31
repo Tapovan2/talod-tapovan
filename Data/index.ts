@@ -1,6 +1,6 @@
 export const standards = {
   "1": {
-    classes: ["Dhruv", "Nachiketa"],
+    classes: ["A"],
     subjects: [
       "Gujarati",
       "Mathematics",
@@ -12,7 +12,7 @@ export const standards = {
     ],
   },
   "2": {
-    classes: ["Nachiketa"],
+    classes: ["A"],
     subjects: [
       "Gujarati",
       "Mathematics",
@@ -23,7 +23,7 @@ export const standards = {
     ],
   },
   "3": {
-    classes: ["Dhruv", "Nachiketa", "Prahlad"],
+    classes: ["A"],
     subjects: [
       "Gujarati",
       "Mathematics",
@@ -35,7 +35,7 @@ export const standards = {
     ],
   },
   "4": {
-    classes: ["Dhruv", "Nachiketa", "Prahlad"],
+    classes: ["A"],
     subjects: [
       "Gujarati",
       "Mathematics",
@@ -47,7 +47,7 @@ export const standards = {
     ],
   },
   "5": {
-    classes: ["Dhruv", "Nachiketa", "Prahlad"],
+    classes: ["A"],
     subjects: [
       "Gujarati",
       "Mathematics",
@@ -59,7 +59,7 @@ export const standards = {
     ],
   },
   "6": {
-    classes: ["Dhruv", "Nachiketa", "Prahlad"],
+    classes: ["A"],
     subjects: [
       "Mathematics",
       "Science",
@@ -74,7 +74,7 @@ export const standards = {
     ],
   },
   "7": {
-    classes: ["Dhruv", "Nachiketa", "Prahlad"],
+    classes: ["A"],
     subjects: [
       "Mathematics",
       "Science",
@@ -89,7 +89,7 @@ export const standards = {
     ],
   },
   "8": {
-    classes: ["Dhruv", "Nachiketa", "Foundation"],
+    classes: ["A"],
     subjects: [
       "Mathematics",
       "Science",
@@ -104,7 +104,7 @@ export const standards = {
     ],
   },
   "9": {
-    classes: ["A", "B", "C", "Foundation"],
+    classes: ["A"],
     subjects: [
       "Hindi",
       "Sanskrit",
@@ -116,7 +116,7 @@ export const standards = {
     ],
   },
   "10": {
-    classes: ["A", "B"],
+    classes: ["A"],
     subjects: [
       "Sanskrit",
       "Maths",
@@ -127,7 +127,7 @@ export const standards = {
     ],
   },
   "11": {
-    classes: ["Maths", "Biology", "Jee", "Neet", "Eng-Jee", "Eng-Neet"],
+    classes: ["A", "B"],
     subjects: [
       "Chemistry ",
       "Physics",
@@ -139,7 +139,7 @@ export const standards = {
     ],
   },
   "12": {
-    classes: ["Maths", "Biology", "Jee", "Neet", "Eng-Jee", "Eng-Neet"],
+    classes: ["A", "B"],
     subjects: [
       "Chemistry ",
       "Physics",
