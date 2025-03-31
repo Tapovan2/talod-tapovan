@@ -6,8 +6,9 @@ export async function GET(request: Request) {
   const standard = searchParams.get("standard");
   const classParam = searchParams.get("class");
   const subject = searchParams.get("subject");
+  const subClass = searchParams.get("subClass");
 
-  console.log(standard, classParam, subject);
+  console.log(standard, classParam, subject, subClass);
 
   let students;
 
@@ -16,6 +17,7 @@ export async function GET(request: Request) {
       students = await prisma.student.findMany({
         where: {
           Standard: standard ? parseInt(standard) : undefined,
+          Class: classParam || undefined,
           subClass: "Maths",
         },
       });
@@ -23,6 +25,7 @@ export async function GET(request: Request) {
       students = await prisma.student.findMany({
         where: {
           Standard: standard ? parseInt(standard) : undefined,
+          Class: classParam || undefined,
           subClass: "Biology",
         },
       });
@@ -42,6 +45,7 @@ export async function GET(request: Request) {
         where: {
           Standard: standard ? parseInt(standard) : undefined,
           Class: classParam || undefined,
+          subClass,
         },
       });
     }
@@ -50,6 +54,7 @@ export async function GET(request: Request) {
       where: {
         Standard: standard ? parseInt(standard) : undefined,
         Class: classParam || undefined,
+        subClass,
       },
     });
   }
