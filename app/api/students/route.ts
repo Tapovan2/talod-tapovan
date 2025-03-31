@@ -59,7 +59,6 @@ export async function GET(request: Request) {
     });
   }
 
-  //@ts-expect-error
   const sortedStudents = students.sort((a, b) => a.rollNo - b.rollNo);
 
   return NextResponse.json(sortedStudents);
