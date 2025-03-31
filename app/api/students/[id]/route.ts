@@ -11,8 +11,8 @@ export async function PUT(
     data: {
       name: data.name,
       rollNo: data.rollNo,
-      currentStandard: parseInt(data.standard),
-      currentClass: data.class,
+      Standard: parseInt(data.standard),
+      Class: data.class,
     },
   });
   return NextResponse.json(student);
@@ -68,8 +68,8 @@ export async function GET(
           id: true,
           rollNo: true,
           name: true,
-          currentStandard: true,
-          currentClass: true,
+          Standard: true,
+          Class: true,
         },
       });
 
@@ -82,8 +82,8 @@ export async function GET(
           id: true,
           rollNo: true,
           name: true,
-          currentStandard: true,
-          currentClass: true,
+          Standard: true,
+          Class: true,
         },
       });
 
