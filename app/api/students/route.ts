@@ -45,7 +45,7 @@ export async function GET(request: Request) {
         where: {
           Standard: standard ? parseInt(standard) : undefined,
           Class: classParam || undefined,
-          subClass,
+          subClass : subClass || undefined,
         },
       });
     }
@@ -54,7 +54,7 @@ export async function GET(request: Request) {
       where: {
         Standard: standard ? parseInt(standard) : undefined,
         Class: classParam || undefined,
-        subClass,
+        subClass : subClass || undefined,
       },
     });
   }
